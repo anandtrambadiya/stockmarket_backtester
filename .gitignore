@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+data/raw_prices.csv
+data/features.csv
+src/__pycache__/
+.vscode/
