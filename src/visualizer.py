@@ -28,3 +28,15 @@ def plot_features(df):
     plt.tight_layout()
     plt.savefig('data/features_plot.png')
 
+
+def plot_backtest(df):
+    fig, ax = plt.subplots(figsize=(14, 6))
+    ax.plot(df.index, df['Cumulative_Strategy'], label = 'Cumulative Strategy', color = 'blue')
+    ax.plot(df.index, df['Cumulative_Market'], label = 'Cumulative Market', color = 'orange', linestyle='--')
+    ax.legend()
+    ax.axhline(1.0, color='grey', linestyle='--')
+    ax.set_title("Strategy vs Market — Cumulative Returns")
+    plt.savefig('data/backtest_plot.png')
+
+
+    

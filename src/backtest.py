@@ -26,6 +26,7 @@ def run_backtest(predictions, X_test, y_test, df):
     # Win Rate:
 
     win_rate = (results['daily_returns'] > 0).mean()
+    
 
     # print(sharpe, max_drawdown, win_rate)
 
