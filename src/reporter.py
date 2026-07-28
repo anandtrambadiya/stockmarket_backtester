@@ -20,7 +20,7 @@ Win Rate: {win_rate:.3f} (percentage of profitable trades, above 0.5 is good)
 Model Accuracy: {accuracy:.3f} (above 0.51 is meaningful for stock prediction)
 Cumulative Strategy Return: {cumulative_strategy:.3f} (starting capital 1.0, ending value)
 Cumulative Market Return: {cumulative_market:.3f} (blind buy-and-hold benchmark)
-Test period: Aug 2024 to Jul 2026, Nifty 50 daily data.
+Test period: Last 2 years from today, Nifty 50 daily data.
 
 Provide a structured performance report covering:
 1. Metrics interpretation

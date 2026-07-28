@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}NiftyML{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #ffffff;
+      --bg2:       #f8f9fa;
+      --bg3:       #f1f3f5;
+      --border:    #e5e7eb;
+      --border2:   #d1d5db;
+      --accent:    #16a34a;
+      --accent2:   #15803d;
+      --danger:    #dc2626;
+      --muted:     #9ca3af;
+      --text:      #111827;
+      --text2:     #6b7280;
+      --mono:      'IBM Plex Mono', monospace;
+      --sans:      'Inter', sans-serif;
+      --shadow:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    html, body { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      height: 56px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--muted); font-weight: 400; }
+    nav ul { display: flex; gap: 4px; list-style: none; }
+    nav a {
+      display: block;
+      padding: 6px 14px;
+      border-radius: 6px;
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: color .15s, background .15s;
+    }
+    nav a:hover { color: var(--text); background: var(--bg3); }
+    nav a.active { color: var(--accent); background: #f0fdf4; }
+
+    main { padding-top: 56px; min-height: 100vh; }
+
+    /* UTILITIES */
+    .mono { font-family: var(--mono); }
+    .accent { color: var(--accent); }
+    .muted { color: var(--text2); }
+    .danger { color: var(--danger); }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    /* SHARED BUTTON */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; text-decoration: none;
+      transition: all .15s; border: none; font-family: var(--sans);
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border2); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: #f0fdf4; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav>
+    <a class="nav-logo" href="/">NIFTY<span>ML</span></a>
+    <ul>
+      <li><a href="/" {% if active == 'home' %}class="active"{% endif %}>Overview</a></li>
+      <li><a href="/dashboard" {% if active == 'dashboard' %}class="active"{% endif %}>Dashboard</a></li>
+      <li><a href="/chat" {% if active == 'chat' %}class="active"{% endif %}>AI Report</a></li>
+    </ul>
+  </nav>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

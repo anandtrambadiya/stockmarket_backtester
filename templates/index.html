@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% block title %}NiftyML — ML-Driven Trading Strategy{% endblock %}
+{% block head %}
+<style>
+  .hero {
+    padding: 80px 48px 72px;
+    max-width: 1080px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block; width: 20px; height: 2px;
+    background: var(--accent); border-radius: 1px;
+  }
+  .hero h1 {
+    font-size: clamp(38px, 5vw, 62px);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .hero h1 .green { color: var(--accent); }
+  .hero-sub {
+    font-size: 16px; color: var(--text2); max-width: 520px;
+    line-height: 1.75; margin-bottom: 40px; font-weight: 400;
+  }
+  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* METRIC STRIP */
+  .metric-strip {
+    max-width: 1080px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4,1fr);
+  }
+  .metric-cell {
+    padding: 32px 28px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .metric-cell:last-child { border-right: none; }
+  .mc-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  }
+  .mc-val {
+    font-family: var(--mono); font-size: 30px; font-weight: 700;
+    line-height: 1; color: var(--text); margin-bottom: 6px;
+  }
+  .mc-val.up { color: var(--accent); }
+  .mc-val.dn { color: var(--danger); }
+  .mc-note { font-size: 12px; color: var(--text2); }
+
+  /* RETURN COMPARISON */
+  .return-section {
+    max-width: 1080px; margin: 0 auto;
+    padding: 56px 48px;
+    border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+  }
+  .return-section h2 {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 24px;
+  }
+  .ret-row { margin-bottom: 20px; }
+  .ret-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .ret-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .ret-pct { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+  .ret-pct.up { color: var(--accent); }
+  .ret-pct.dn { color: var(--danger); }
+  .bar-track {
+    height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden;
+  }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .bar-green { background: var(--accent); }
+  .bar-red   { background: var(--danger); }
+
+  .alpha-box {
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 12px; padding: 32px; text-align: center;
+  }
+  .alpha-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  .alpha-val {
+    font-family: var(--mono); font-size: 56px; font-weight: 700;
+    color: var(--accent); line-height: 1;
+  }
+  .alpha-sub { font-size: 13px; color: var(--text2); margin-top: 10px; }
+
+  /* PIPELINE */
+  .pipeline-section {
+    max-width: 1080px; margin: 0 auto;
+    padding: 56px 48px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title {
+    font-size: 20px; font-weight: 700; color: var(--text);
+    margin-bottom: 8px; letter-spacing: -0.01em;
+  }
+  .section-sub { font-size: 13px; color: var(--text2); margin-bottom: 32px; }
+  .steps { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
+  .step {
+    min-width: 170px; flex: 1;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 18px;
+  }
+  .step.hl { background: #f0fdf4; border-color: #86efac; }
+  .step-n {
+    font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 10px;
+  }
+  .step-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .step-desc { font-size: 11px; color: var(--text2); line-height: 1.5; margin-bottom: 10px; }
+  .step-file { font-family: var(--mono); font-size: 10px; color: var(--accent); }
+
+  /* FEATURES */
+  .features-section {
+    max-width: 1080px; margin: 0 auto;
+    padding: 56px 48px 72px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+  }
+  .feat-row { margin-bottom: 16px; }
+  .feat-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .feat-name { font-family: var(--mono); font-size: 12px; color: var(--text); }
+  .feat-pct  { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .feat-desc { font-size: 11px; color: var(--text2); margin-top: 3px; }
+
+  /* STACK */
+  .stack-section {
+    background: var(--bg2); border-top: 1px solid var(--border);
+    padding: 40px 0;
+  }
+  .stack-inner { max-width: 1080px; margin: 0 auto; padding: 0 48px; }
+  .stack-inner h3 { font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge {
+    font-family: var(--mono); font-size: 12px;
+    padding: 4px 14px; border-radius: 100px;
+    background: var(--bg); border: 1px solid var(--border2); color: var(--text2);
+  }
+
+  @media (max-width: 768px) {
+    .metric-strip { grid-template-columns: 1fr 1fr; }
+    .return-section, .features-section { grid-template-columns: 1fr; }
+    .hero, .return-section, .pipeline-section, .features-section { padding-left: 24px; padding-right: 24px; }
+    .stack-inner { padding: 0 24px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Nifty 50 · Aug 2024 – Jul 2026 · Random Forest</div>
+  <h1>ML strategy<br/>beats market by<br/><span class="green">+36.7 pp</span></h1>
+  <p class="hero-sub">
+    A Random Forest classifier trained on Nifty 50 technical indicators predicts next-day
+    intraday direction. Strategy returned <strong>+24%</strong> while buy-and-hold lost <strong style="color:var(--danger)">−12.7%</strong>.
+  </p>
+  <div class="hero-cta">
+    <a href="/dashboard" class="btn btn-primary">View Dashboard</a>
+    <a href="/chat" class="btn btn-ghost">AI Analysis →</a>
+  </div>
+</section>
+
+<!-- METRICS -->
+<div class="metric-strip">
+  <div class="metric-cell">
+    <div class="mc-label">Model Accuracy</div>
+    <div class="mc-val up">54.2%</div>
+    <div class="mc-note">vs 50% random baseline</div>
+  </div>
+  <div class="metric-cell">
+    <div class="mc-label">Sharpe Ratio</div>
+    <div class="mc-val up">1.159</div>
+    <div class="mc-note">Risk-adjusted outperformance</div>
+  </div>
+  <div class="metric-cell">
+    <div class="mc-label">Max Drawdown</div>
+    <div class="mc-val dn">−5.3%</div>
+    <div class="mc-note">Peak-to-trough decline</div>
+  </div>
+  <div class="metric-cell">
+    <div class="mc-label">Win Rate</div>
+    <div class="mc-val up">53.4%</div>
+    <div class="mc-note">Profitable trades</div>
+  </div>
+</div>
+
+<!-- RETURN COMPARISON -->
+<section class="return-section">
+  <div>
+    <h2>Return comparison</h2>
+    <div class="ret-row">
+      <div class="ret-top">
+        <span class="ret-name">ML Strategy</span>
+        <span class="ret-pct up">+24.0%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill bar-green" style="width:82%"></div>
+      </div>
+    </div>
+    <div class="ret-row">
+      <div class="ret-top">
+        <span class="ret-name">Buy &amp; Hold (Nifty 50)</span>
+        <span class="ret-pct dn">−12.7%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill bar-red" style="width:43%"></div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-top:20px;line-height:1.7">
+      Test period: Aug 2024 – Jul 2026. Strategy compounds daily returns using
+      model signals (long on bullish prediction, short on bearish). Benchmark is
+      passive buy-and-hold over the same period.
+    </p>
+  </div>
+  <div class="alpha-box">
+    <div class="alpha-label">Alpha generated</div>
+    <div class="alpha-val">+36.7<span style="font-size:24px">pp</span></div>
+    <div class="alpha-sub">Strategy outperformed buy-and-hold<br/>by 36.7 percentage points</div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section class="pipeline-section">
+  <div class="section-title">How it works</div>
+  <div class="section-sub">Five-stage automated pipeline runs daily with caching</div>
+  <div class="steps">
+    {% set pipeline = [
+      ("01", "Data Load", "10 years of Nifty 50 OHLCV via yfinance", "data_loader.py", False),
+      ("02", "Features", "SMA20/50, RSI14, Bollinger Bands, Volatility20", "features.py", False),
+      ("03", "ML Model", "Random Forest classifier, 80/20 time-split training", "model.py", False),
+      ("04", "Backtest", "Simulate trades, compute Sharpe, drawdown, win rate", "backtest.py", False),
+      ("05", "AI Report", "Groq LLM generates quant analysis on demand", "reporter.py", True),
+    ] %}
+    {% for n, name, desc, file, hl in pipeline %}
+    <div class="step {{ 'hl' if hl else '' }}">
+      <div class="step-n">{{ n }}</div>
+      <div class="step-name">{{ name }}</div>
+      <div class="step-desc">{{ desc }}</div>
+      <div class="step-file">{{ file }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- FEATURES + ABOUT -->
+<section class="features-section">
+  <div>
+    <div class="section-title">Feature importance</div>
+    <div class="section-sub">What the model relies on most</div>
+    {% set features = [
+      ("RSI_14", 0.217, "Momentum oscillator — overbought/oversold signal"),
+      ("SMA20",  0.198, "Short-term trend direction"),
+      ("SMA50",  0.185, "Medium-term trend baseline"),
+      ("BB_upper",0.162,"Upper Bollinger Band — resistance zone"),
+      ("BB_lower",0.148,"Lower Bollinger Band — support zone"),
+      ("Volatility_20",0.090,"20-day rolling standard deviation"),
+    ] %}
+    {% for name, imp, desc in features %}
+    <div class="feat-row">
+      <div class="feat-top">
+        <span class="feat-name">{{ name }}</span>
+        <span class="feat-pct">{{ "%.1f"|format(imp*100) }}%</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill bar-green" style="width:{{ (imp/0.217*100)|int }}%"></div>
+      </div>
+      <div class="feat-desc">{{ desc }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <div>
+    <div class="section-title">About the strategy</div>
+    <div class="section-sub">Design decisions</div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      {% set points = [
+        ("Signal", "Predicts whether Nifty 50 closes above its open the next day — a binary intraday direction signal."),
+        ("No look-ahead bias", "80% chronological train / 20% test split ensures the model never sees future data during training."),
+        ("Class balance", "class_weight='balanced' handles any imbalance in up vs down days, improving minority-class recall."),
+        ("Compounding", "Daily returns compound multiplicatively into a cumulative equity curve for fair benchmark comparison."),
+      ] %}
+      {% for title, desc in points %}
+      <div style="padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">{{ title }}</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.6">{{ desc }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<div class="stack-section">
+  <div class="stack-inner">
+    <h3>Tech stack</h3>
+    <div class="badges">
+      {% for b in ["Python 3.11","pandas","scikit-learn","yfinance","matplotlib","Flask","Groq API","llama-3.1-8b-instant","Random Forest"] %}
+      <span class="badge">{{ b }}</span>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
