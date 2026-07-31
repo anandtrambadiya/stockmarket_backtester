@@ -1,316 +1,719 @@
 {% extends "base.html" %}
-{% block title %}NiftyML — ML-Driven Trading Strategy{% endblock %}
+{% block title %}NiftyML — ML-Powered Nifty 50 Trading Strategy{% endblock %}
 {% block head %}
 <style>
-  .hero {
-    padding: 80px 48px 72px;
-    max-width: 1080px;
-    margin: 0 auto;
-    border-bottom: 1px solid var(--border);
-  }
-  .hero-eyebrow {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 20px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .hero-eyebrow::before {
-    content: '';
-    display: inline-block; width: 20px; height: 2px;
-    background: var(--accent); border-radius: 1px;
-  }
-  .hero h1 {
-    font-size: clamp(38px, 5vw, 62px);
-    font-weight: 700;
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-    color: var(--text);
-    margin-bottom: 20px;
-  }
-  .hero h1 .green { color: var(--accent); }
-  .hero-sub {
-    font-size: 16px; color: var(--text2); max-width: 520px;
-    line-height: 1.75; margin-bottom: 40px; font-weight: 400;
-  }
-  .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
+/* ═══════════════════════════════════════════════════
+   DARK THEME OVERRIDE — full page, no seam possible
+═══════════════════════════════════════════════════ */
+body.page-index{
+  --bg:       #09090B;
+  --bg2:      #111113;
+  --bg3:      #1C1C1F;
+  --surface:  #141416;
+  --border:   rgba(255,255,255,.08);
+  --border2:  rgba(255,255,255,.12);
+  --ink:      #FFFFFF;
+  --ink2:     #F4F4F5;
+  --text:     rgba(255,255,255,.92);
+  --text2:    rgba(255,255,255,.45);
+  --text3:    rgba(255,255,255,.25);
+  --green:    #4ADE80;
+  --green-bg: rgba(74,222,128,.08);
+  --green-bd: rgba(74,222,128,.2);
+  --red:      #F87171;
+  --red-bg:   rgba(248,113,113,.08);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  --shadow:   0 1px 3px rgba(0,0,0,.5),0 1px 2px rgba(0,0,0,.4);
+  --shadow-md:0 4px 24px rgba(0,0,0,.6),0 2px 8px rgba(0,0,0,.4);
+  background:#09090B;
+}
 
-  /* METRIC STRIP */
-  .metric-strip {
-    max-width: 1080px; margin: 0 auto;
-    display: grid; grid-template-columns: repeat(4,1fr);
-  }
-  .metric-cell {
-    padding: 32px 28px;
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .metric-cell:last-child { border-right: none; }
-  .mc-label {
-    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
-  }
-  .mc-val {
-    font-family: var(--mono); font-size: 30px; font-weight: 700;
-    line-height: 1; color: var(--text); margin-bottom: 6px;
-  }
-  .mc-val.up { color: var(--accent); }
-  .mc-val.dn { color: var(--danger); }
-  .mc-note { font-size: 12px; color: var(--text2); }
+/* Nav goes dark on index */
+body.page-index nav{
+  background:rgba(9,9,11,.8);
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+body.page-index .nav-logo-text{color:#fff}
+body.page-index nav a{color:rgba(255,255,255,.45)}
+body.page-index nav a:hover{color:#fff;background:rgba(255,255,255,.07)}
+body.page-index nav a.active{color:#fff;background:rgba(255,255,255,.07)}
+body.page-index .nav-logo-mark{background:#fff}
+body.page-index .nav-logo-mark svg polyline{stroke:#09090B}
+body.page-index .nav-cta{background:#4ADE80!important;color:#09090B!important}
+body.page-index .nav-cta:hover{opacity:.9!important}
 
-  /* RETURN COMPARISON */
-  .return-section {
-    max-width: 1080px; margin: 0 auto;
-    padding: 56px 48px;
-    border-bottom: 1px solid var(--border);
-    display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
-  }
-  .return-section h2 {
-    font-size: 13px; font-weight: 600; letter-spacing: 0.06em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 24px;
-  }
-  .ret-row { margin-bottom: 20px; }
-  .ret-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
-  .ret-name { font-size: 13px; font-weight: 500; color: var(--text); }
-  .ret-pct { font-family: var(--mono); font-size: 13px; font-weight: 600; }
-  .ret-pct.up { color: var(--accent); }
-  .ret-pct.dn { color: var(--danger); }
-  .bar-track {
-    height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden;
-  }
-  .bar-fill { height: 100%; border-radius: 3px; }
-  .bar-green { background: var(--accent); }
-  .bar-red   { background: var(--danger); }
+/* ═══════════════════
+   HERO
+═══════════════════ */
+.hero{
+  height:calc(100vh - 56px);
+  min-height:620px;
+  background:#09090B;
+  display:flex;flex-direction:column;
+  justify-content:space-between;
+  position:relative;overflow:hidden;
+}
 
-  .alpha-box {
-    background: #f0fdf4; border: 1px solid #bbf7d0;
-    border-radius: 12px; padding: 32px; text-align: center;
-  }
-  .alpha-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-  .alpha-val {
-    font-family: var(--mono); font-size: 56px; font-weight: 700;
-    color: var(--accent); line-height: 1;
-  }
-  .alpha-sub { font-size: 13px; color: var(--text2); margin-top: 10px; }
+#hero-canvas{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  opacity:.4;pointer-events:none;
+}
 
-  /* PIPELINE */
-  .pipeline-section {
-    max-width: 1080px; margin: 0 auto;
-    padding: 56px 48px;
-    border-bottom: 1px solid var(--border);
-  }
-  .section-title {
-    font-size: 20px; font-weight: 700; color: var(--text);
-    margin-bottom: 8px; letter-spacing: -0.01em;
-  }
-  .section-sub { font-size: 13px; color: var(--text2); margin-bottom: 32px; }
-  .steps { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
-  .step {
-    min-width: 170px; flex: 1;
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 20px 18px;
-  }
-  .step.hl { background: #f0fdf4; border-color: #86efac; }
-  .step-n {
-    font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 10px;
-  }
-  .step-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .step-desc { font-size: 11px; color: var(--text2); line-height: 1.5; margin-bottom: 10px; }
-  .step-file { font-family: var(--mono); font-size: 10px; color: var(--accent); }
+/* Left-side radial glow — feels like a light source */
+.hero-glow{
+  position:absolute;
+  width:600px;height:600px;
+  left:-120px;top:50%;transform:translateY(-50%);
+  background:radial-gradient(circle, rgba(74,222,128,.07) 0%, transparent 70%);
+  pointer-events:none;z-index:1;
+}
 
-  /* FEATURES */
-  .features-section {
-    max-width: 1080px; margin: 0 auto;
-    padding: 56px 48px 72px;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
-  }
-  .feat-row { margin-bottom: 16px; }
-  .feat-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
-  .feat-name { font-family: var(--mono); font-size: 12px; color: var(--text); }
-  .feat-pct  { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-  .feat-desc { font-size: 11px; color: var(--text2); margin-top: 3px; }
+/* Bottom fade so the stat strip doesn't feel cut off */
+.hero-vignette{
+  position:absolute;bottom:0;left:0;right:0;height:180px;
+  background:linear-gradient(to bottom, transparent, rgba(9,9,11,.6));
+  pointer-events:none;z-index:1;
+}
+.hero-vignette2{display:none}
 
-  /* STACK */
-  .stack-section {
-    background: var(--bg2); border-top: 1px solid var(--border);
-    padding: 40px 0;
-  }
-  .stack-inner { max-width: 1080px; margin: 0 auto; padding: 0 48px; }
-  .stack-inner h3 { font-size: 12px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; }
-  .badges { display: flex; flex-wrap: wrap; gap: 8px; }
-  .badge {
-    font-family: var(--mono); font-size: 12px;
-    padding: 4px 14px; border-radius: 100px;
-    background: var(--bg); border: 1px solid var(--border2); color: var(--text2);
-  }
+/* Center content */
+.hero-inner{
+  position:relative;z-index:2;
+  max-width:1160px;margin:0 auto;width:100%;
+  padding:0 64px;
+  flex:1;
+  display:flex;flex-direction:column;justify-content:center;
+  padding-top:56px;padding-bottom:24px;
+}
 
-  @media (max-width: 768px) {
-    .metric-strip { grid-template-columns: 1fr 1fr; }
-    .return-section, .features-section { grid-template-columns: 1fr; }
-    .hero, .return-section, .pipeline-section, .features-section { padding-left: 24px; padding-right: 24px; }
-    .stack-inner { padding: 0 24px; }
-  }
+/* Entrance animations */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.hero-badge   { animation: fadeUp .7s cubic-bezier(.16,1,.3,1) .05s both }
+.hero-h1      { animation: fadeUp .9s cubic-bezier(.16,1,.3,1) .18s both }
+.hero-sub     { animation: fadeUp .9s cubic-bezier(.16,1,.3,1) .32s both }
+.hero-cta     { animation: fadeUp .9s cubic-bezier(.16,1,.3,1) .44s both }
+.hero-stat-strip { animation: fadeIn .8s ease .7s both }
+#hero-canvas  { animation: fadeIn 1.6s ease .1s both }
+
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:100px;padding:6px 16px;
+  margin-bottom:36px;width:fit-content;
+}
+.hero-badge-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#4ADE80;
+  box-shadow:0 0 0 3px rgba(74,222,128,.2);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 3px rgba(74,222,128,.2)}
+  50%{box-shadow:0 0 0 7px rgba(74,222,128,0)}
+}
+.hero-badge span{
+  font-size:11px;font-weight:500;
+  color:rgba(255,255,255,.45);letter-spacing:.05em;
+}
+
+.hero-h1{
+  font-size:clamp(48px,7.5vw,100px);
+  font-weight:800;line-height:1.02;
+  letter-spacing:-.04em;color:#fff;
+  margin-bottom:28px;
+  max-width:900px;
+}
+.hero-h1 .accent{ color:#4ADE80 }
+
+.hero-sub{
+  font-size:16px;
+  color:rgba(255,255,255,.38);
+  line-height:1.75;
+  max-width:520px;
+  margin-bottom:40px;
+}
+.hero-sub strong{color:rgba(255,255,255,.65);font-weight:500}
+
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+
+/* ── Stat strip — seamlessly dark ── */
+.hero-stat-strip{
+  position:relative;z-index:2;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.stat-strip-inner{
+  max-width:1160px;margin:0 auto;
+  padding:0 64px;
+  display:grid;grid-template-columns:repeat(4,1fr);
+}
+.hstat{
+  padding:24px 0;
+  border-right:1px solid rgba(255,255,255,.06);
+  padding-left:28px;
+}
+.hstat:first-child{padding-left:0}
+.hstat:last-child{border-right:none}
+.hstat-val{
+  font-family:var(--mono);font-size:22px;font-weight:600;
+  color:#fff;line-height:1;margin-bottom:6px;
+  letter-spacing:-.02em;
+}
+.hstat-val.g{color:#4ADE80}
+.hstat-val.r{color:#F87171}
+.hstat-lbl{
+  font-size:10px;color:rgba(255,255,255,.28);
+  letter-spacing:.14em;text-transform:uppercase;
+}
+
+/* ═══════════════════════════════
+   PRODUCT SECTION — also dark, no seam
+═══════════════════════════════ */
+.product-section{
+  background:var(--bg);
+  padding:96px 48px;
+}
+.ps-inner{max-width:1160px;margin:0 auto}
+
+.s-label{
+  font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:.16em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:10px;
+}
+.s-heading{
+  font-size:clamp(28px,3.5vw,40px);font-weight:800;
+  letter-spacing:-.025em;color:var(--ink);line-height:1.12;
+  margin-bottom:12px;
+}
+.s-sub{font-size:15px;color:var(--text2);line-height:1.7;max-width:480px}
+
+/* ── Metrics ── */
+.metrics-row{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:12px;margin:56px 0;
+}
+.mcard{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:22px 20px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s,transform .2s;
+}
+.mcard:hover{border-color:var(--border2);transform:translateY(-2px)}
+.mcard::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+}
+.mcard.pos::after{background:linear-gradient(90deg,transparent,#4ADE80,transparent)}
+.mcard.neg::after{background:linear-gradient(90deg,transparent,#F87171,transparent)}
+.mc-tag{
+  font-family:var(--mono);font-size:9px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:12px;
+}
+.mc-big{
+  font-family:var(--mono);font-size:30px;font-weight:700;
+  line-height:1;letter-spacing:-.01em;margin-bottom:8px;
+}
+.mc-big.pos{color:#4ADE80}
+.mc-big.neg{color:#F87171}
+.mc-big.neu{color:var(--ink)}
+.mc-note{font-size:11px;color:var(--text2);line-height:1.4}
+
+/* ── Compare ── */
+.compare-wrap{
+  display:grid;grid-template-columns:5fr 4fr;
+  gap:48px;align-items:center;
+  padding:56px 0;border-top:1px solid var(--border);
+}
+.compare-heading{
+  font-size:clamp(26px,3vw,38px);font-weight:800;
+  letter-spacing:-.025em;line-height:1.12;
+  color:var(--ink);margin-bottom:16px;
+}
+.compare-heading .g{color:#4ADE80}
+.compare-heading .r{color:#F87171}
+.compare-body{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:24px}
+.compare-body strong{color:var(--ink);font-weight:600}
+
+.retbars{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;
+}
+.rb-row{margin-bottom:20px}
+.rb-row:last-child{margin-bottom:0}
+.rb-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.rb-name{font-size:13px;font-weight:500;color:var(--text)}
+.rb-val{font-family:var(--mono);font-size:13px;font-weight:600}
+.rb-val.g{color:#4ADE80}
+.rb-val.r{color:#F87171}
+.rb-track{height:6px;background:var(--bg3);border-radius:100px;overflow:hidden}
+.rb-fill{height:100%;border-radius:100px;width:0;transition:width 1.2s cubic-bezier(.25,.46,.45,.94)}
+.rb-fill.g{background:#4ADE80}
+.rb-fill.r{background:#F87171}
+.alpha-chip{
+  margin-top:20px;padding:16px;
+  background:var(--green-bg);border:1px solid var(--green-bd);
+  border-radius:8px;display:flex;align-items:center;justify-content:space-between;
+}
+.alpha-chip-label{font-size:12px;color:#4ADE80;font-weight:500}
+.alpha-chip-val{font-family:var(--mono);font-size:22px;font-weight:700;color:#4ADE80}
+
+/* ── Pipeline ── */
+.pipeline-wrap{
+  padding:56px 0;border-top:1px solid var(--border);
+  display:grid;grid-template-columns:200px 1fr;gap:48px;align-items:start;
+}
+.pipeline-steps{display:flex;flex-direction:column;gap:1px}
+.ps{
+  display:flex;gap:14px;align-items:flex-start;
+  padding:14px 16px;border-radius:8px;
+  cursor:pointer;transition:background .15s;
+}
+.ps:hover,.ps.active-ps{background:var(--surface);border:1px solid var(--border)}
+.ps-num{
+  font-family:var(--mono);font-size:11px;color:var(--text3);
+  min-width:24px;padding-top:1px;
+}
+.ps-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.ps-file{font-family:var(--mono);font-size:10px;color:#4ADE80}
+.pipeline-detail{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:28px;
+}
+.pd-title{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:8px}
+.pd-body{font-size:14px;color:var(--text2);line-height:1.8}
+.pd-code{
+  margin-top:14px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:6px;padding:12px 14px;
+  font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.5);
+}
+
+/* ── Features ── */
+.features-wrap{
+  padding:56px 0;border-top:1px solid var(--border);
+  display:grid;grid-template-columns:1fr 1fr;gap:64px;
+}
+.feat-row{margin-bottom:18px}
+.feat-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.feat-name{font-family:var(--mono);font-size:12px;color:var(--text)}
+.feat-pct{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.feat-bar-track{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.feat-bar-fill{height:100%;background:#4ADE80;border-radius:3px;width:0}
+.feat-desc{font-size:11px;color:var(--text2);margin-top:3px}
+
+.decision-list{display:flex;flex-direction:column;gap:8px}
+.ditem{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:14px 16px;
+}
+.ditem-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.ditem-body{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* ── CTA Band ── */
+.cta-band{
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:72px 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:32px;
+}
+.cta-band-text h2{
+  font-size:clamp(24px,3vw,36px);font-weight:800;
+  letter-spacing:-.025em;color:#fff;margin-bottom:10px;
+}
+.cta-band-text p{font-size:14px;color:rgba(255,255,255,.38);max-width:400px;line-height:1.7}
+.cta-band-actions{display:flex;gap:12px;flex-wrap:wrap}
+
+/* ── Footer ── */
+footer{
+  background:var(--bg);
+  border-top:1px solid var(--border);
+  padding:28px 48px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
+}
+.footer-logo{font-size:14px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:-.01em}
+.footer-stack{display:flex;flex-wrap:wrap;gap:6px}
+.f-chip{
+  font-family:var(--mono);font-size:10px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:100px;padding:3px 10px;color:rgba(255,255,255,.3);
+}
+
+/* Shared btn overrides for dark page */
+body.page-index .btn-primary{background:#fff;color:#09090B}
+body.page-index .btn-primary:hover{opacity:.88}
+body.page-index .btn-green{background:#4ADE80;color:#09090B}
+
+@media(max-width:960px){
+  .hero-inner{padding:40px 24px 20px}
+  .stat-strip-inner{padding:0 24px;grid-template-columns:repeat(2,1fr)}
+  .hstat{padding:18px 0 18px 16px}
+  .hstat:first-child,.hstat:nth-child(3){padding-left:0}
+  .product-section{padding:64px 24px}
+  .metrics-row{grid-template-columns:1fr 1fr}
+  .compare-wrap{grid-template-columns:1fr}
+  .pipeline-wrap{grid-template-columns:1fr}
+  .features-wrap{grid-template-columns:1fr}
+  .cta-band{padding:48px 24px}
+  footer{padding:24px}
+}
 </style>
 {% endblock %}
 
 {% block content %}
+<script>document.body.classList.add('page-index')</script>
 
-<!-- HERO -->
+<!-- ════════════════════ HERO ════════════════════ -->
 <section class="hero">
-  <div class="hero-eyebrow">Nifty 50 · Aug 2024 – Jul 2026 · Random Forest</div>
-  <h1>ML strategy<br/>beats market by<br/><span class="green">+36.7 pp</span></h1>
-  <p class="hero-sub">
-    A Random Forest classifier trained on Nifty 50 technical indicators predicts next-day
-    intraday direction. Strategy returned <strong>+24%</strong> while buy-and-hold lost <strong style="color:var(--danger)">−12.7%</strong>.
-  </p>
-  <div class="hero-cta">
-    <a href="/dashboard" class="btn btn-primary">View Dashboard</a>
-    <a href="/chat" class="btn btn-ghost">AI Analysis →</a>
-  </div>
-</section>
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-glow"></div>
+  <div class="hero-vignette"></div>
 
-<!-- METRICS -->
-<div class="metric-strip">
-  <div class="metric-cell">
-    <div class="mc-label">Model Accuracy</div>
-    <div class="mc-val up">54.2%</div>
-    <div class="mc-note">vs 50% random baseline</div>
-  </div>
-  <div class="metric-cell">
-    <div class="mc-label">Sharpe Ratio</div>
-    <div class="mc-val up">1.159</div>
-    <div class="mc-note">Risk-adjusted outperformance</div>
-  </div>
-  <div class="metric-cell">
-    <div class="mc-label">Max Drawdown</div>
-    <div class="mc-val dn">−5.3%</div>
-    <div class="mc-note">Peak-to-trough decline</div>
-  </div>
-  <div class="metric-cell">
-    <div class="mc-label">Win Rate</div>
-    <div class="mc-val up">53.4%</div>
-    <div class="mc-note">Profitable trades</div>
-  </div>
-</div>
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      <span>Nifty 50 · Random Forest · Aug 2024 – Jul 2026</span>
+    </div>
 
-<!-- RETURN COMPARISON -->
-<section class="return-section">
-  <div>
-    <h2>Return comparison</h2>
-    <div class="ret-row">
-      <div class="ret-top">
-        <span class="ret-name">ML Strategy</span>
-        <span class="ret-pct up">+24.0%</span>
-      </div>
-      <div class="bar-track">
-        <div class="bar-fill bar-green" style="width:82%"></div>
-      </div>
-    </div>
-    <div class="ret-row">
-      <div class="ret-top">
-        <span class="ret-name">Buy &amp; Hold (Nifty 50)</span>
-        <span class="ret-pct dn">−12.7%</span>
-      </div>
-      <div class="bar-track">
-        <div class="bar-fill bar-red" style="width:43%"></div>
-      </div>
-    </div>
-    <p style="font-size:12px;color:var(--text2);margin-top:20px;line-height:1.7">
-      Test period: Aug 2024 – Jul 2026. Strategy compounds daily returns using
-      model signals (long on bullish prediction, short on bearish). Benchmark is
-      passive buy-and-hold over the same period.
+    <h1 class="hero-h1">
+      The market lost 12.7%.<br/>
+      The model made<br/>
+      <span class="accent">+24%.</span>
+    </h1>
+
+    <p class="hero-sub">
+      A Random Forest classifier trained on 10 years of Nifty 50 data predicts
+      next-day direction — <strong>+36.7pp alpha</strong> over buy-and-hold,
+      Sharpe 1.159, max drawdown −5.3%.
     </p>
-  </div>
-  <div class="alpha-box">
-    <div class="alpha-label">Alpha generated</div>
-    <div class="alpha-val">+36.7<span style="font-size:24px">pp</span></div>
-    <div class="alpha-sub">Strategy outperformed buy-and-hold<br/>by 36.7 percentage points</div>
-  </div>
-</section>
 
-<!-- PIPELINE -->
-<section class="pipeline-section">
-  <div class="section-title">How it works</div>
-  <div class="section-sub">Five-stage automated pipeline runs daily with caching</div>
-  <div class="steps">
-    {% set pipeline = [
-      ("01", "Data Load", "10 years of Nifty 50 OHLCV via yfinance", "data_loader.py", False),
-      ("02", "Features", "SMA20/50, RSI14, Bollinger Bands, Volatility20", "features.py", False),
-      ("03", "ML Model", "Random Forest classifier, 80/20 time-split training", "model.py", False),
-      ("04", "Backtest", "Simulate trades, compute Sharpe, drawdown, win rate", "backtest.py", False),
-      ("05", "AI Report", "Groq LLM generates quant analysis on demand", "reporter.py", True),
-    ] %}
-    {% for n, name, desc, file, hl in pipeline %}
-    <div class="step {{ 'hl' if hl else '' }}">
-      <div class="step-n">{{ n }}</div>
-      <div class="step-name">{{ name }}</div>
-      <div class="step-desc">{{ desc }}</div>
-      <div class="step-file">{{ file }}</div>
+    <div class="hero-cta">
+      <a href="/dashboard" class="btn btn-primary">View Dashboard</a>
+      <a href="/chat" class="btn btn-secondary" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.6)">Ask AI Analyst →</a>
     </div>
-    {% endfor %}
   </div>
-</section>
 
-<!-- FEATURES + ABOUT -->
-<section class="features-section">
-  <div>
-    <div class="section-title">Feature importance</div>
-    <div class="section-sub">What the model relies on most</div>
-    {% set features = [
-      ("RSI_14", 0.217, "Momentum oscillator — overbought/oversold signal"),
-      ("SMA20",  0.198, "Short-term trend direction"),
-      ("SMA50",  0.185, "Medium-term trend baseline"),
-      ("BB_upper",0.162,"Upper Bollinger Band — resistance zone"),
-      ("BB_lower",0.148,"Lower Bollinger Band — support zone"),
-      ("Volatility_20",0.090,"20-day rolling standard deviation"),
-    ] %}
-    {% for name, imp, desc in features %}
-    <div class="feat-row">
-      <div class="feat-top">
-        <span class="feat-name">{{ name }}</span>
-        <span class="feat-pct">{{ "%.1f"|format(imp*100) }}%</span>
+  <div class="hero-stat-strip">
+    <div class="stat-strip-inner">
+      <div class="hstat">
+        <div class="hstat-val g">54.2%</div>
+        <div class="hstat-lbl">Accuracy</div>
       </div>
-      <div class="bar-track">
-        <div class="bar-fill bar-green" style="width:{{ (imp/0.217*100)|int }}%"></div>
+      <div class="hstat">
+        <div class="hstat-val g">1.159</div>
+        <div class="hstat-lbl">Sharpe Ratio</div>
       </div>
-      <div class="feat-desc">{{ desc }}</div>
-    </div>
-    {% endfor %}
-  </div>
-  <div>
-    <div class="section-title">About the strategy</div>
-    <div class="section-sub">Design decisions</div>
-    <div style="display:flex;flex-direction:column;gap:16px">
-      {% set points = [
-        ("Signal", "Predicts whether Nifty 50 closes above its open the next day — a binary intraday direction signal."),
-        ("No look-ahead bias", "80% chronological train / 20% test split ensures the model never sees future data during training."),
-        ("Class balance", "class_weight='balanced' handles any imbalance in up vs down days, improving minority-class recall."),
-        ("Compounding", "Daily returns compound multiplicatively into a cumulative equity curve for fair benchmark comparison."),
-      ] %}
-      {% for title, desc in points %}
-      <div style="padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px">
-        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">{{ title }}</div>
-        <div style="font-size:12px;color:var(--text2);line-height:1.6">{{ desc }}</div>
+      <div class="hstat">
+        <div class="hstat-val r">−5.3%</div>
+        <div class="hstat-lbl">Max Drawdown</div>
       </div>
-      {% endfor %}
+      <div class="hstat">
+        <div class="hstat-val g">53.4%</div>
+        <div class="hstat-lbl">Win Rate</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- STACK -->
-<div class="stack-section">
-  <div class="stack-inner">
-    <h3>Tech stack</h3>
-    <div class="badges">
-      {% for b in ["Python 3.11","pandas","scikit-learn","yfinance","matplotlib","Flask","Groq API","llama-3.1-8b-instant","Random Forest"] %}
-      <span class="badge">{{ b }}</span>
-      {% endfor %}
+<!-- ════════════════════ PRODUCT ════════════════════ -->
+<section class="product-section">
+  <div class="ps-inner">
+
+    <div class="s-label">Performance metrics</div>
+    <div class="s-heading">Results that speak.</div>
+
+    <div class="metrics-row">
+      <div class="mcard pos">
+        <div class="mc-tag">Model Accuracy</div>
+        <div class="mc-big pos">54.2%</div>
+        <div class="mc-note">+4.2pp above 50% random baseline</div>
+      </div>
+      <div class="mcard pos">
+        <div class="mc-tag">Sharpe Ratio</div>
+        <div class="mc-big neu">1.159</div>
+        <div class="mc-note">Above 1.0 — strong risk-adjusted return</div>
+      </div>
+      <div class="mcard neg">
+        <div class="mc-tag">Max Drawdown</div>
+        <div class="mc-big neg">−5.3%</div>
+        <div class="mc-note">Peak-to-trough. Controlled downside exposure.</div>
+      </div>
+      <div class="mcard pos">
+        <div class="mc-tag">Win Rate</div>
+        <div class="mc-big pos">53.4%</div>
+        <div class="mc-note">Majority of daily signals profitable</div>
+      </div>
     </div>
+
+    <div class="compare-wrap">
+      <div>
+        <div class="s-label">Strategy vs Benchmark</div>
+        <div class="compare-heading">
+          <span class="g">+24%</span> vs <span class="r">−12.7%</span>.<br/>
+          Same index, same dates.
+        </div>
+        <p class="compare-body">
+          The Nifty 50 buy-and-hold investor <strong>lost 12.7%</strong> between
+          August 2024 and July 2026. The ML strategy compounded to a
+          <strong>+24% return</strong> over the identical window —
+          a <strong>36.7 percentage-point</strong> outperformance with a Sharpe
+          ratio of 1.159 and a max drawdown of only −5.3%.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a href="/dashboard" class="btn btn-primary">Full dashboard</a>
+          <a href="/chat" class="btn btn-secondary" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.5)">AI analysis →</a>
+        </div>
+      </div>
+      <div>
+        <div class="retbars">
+          <div class="rb-row">
+            <div class="rb-top">
+              <span class="rb-name">ML Strategy</span>
+              <span class="rb-val g">+24.0%</span>
+            </div>
+            <div class="rb-track"><div class="rb-fill g" data-width="84%"></div></div>
+          </div>
+          <div class="rb-row">
+            <div class="rb-top">
+              <span class="rb-name">Buy &amp; Hold (Nifty 50)</span>
+              <span class="rb-val r">−12.7%</span>
+            </div>
+            <div class="rb-track"><div class="rb-fill r" data-width="30%"></div></div>
+          </div>
+          <div class="alpha-chip">
+            <div>
+              <div class="alpha-chip-label">Alpha over benchmark</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:2px">Strategy − Buy&amp;hold · same period</div>
+            </div>
+            <div class="alpha-chip-val">+36.7pp</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipeline-wrap">
+      <div>
+        <div class="s-label" style="margin-bottom:20px">How it works</div>
+        <div class="pipeline-steps" id="pipeline-steps">
+          <div class="ps active-ps" data-idx="0">
+            <span class="ps-num">01</span>
+            <div class="ps-info"><div class="ps-name">Data Load</div><div class="ps-file">data_loader.py</div></div>
+          </div>
+          <div class="ps" data-idx="1">
+            <span class="ps-num">02</span>
+            <div class="ps-info"><div class="ps-name">Feature Engineering</div><div class="ps-file">features.py</div></div>
+          </div>
+          <div class="ps" data-idx="2">
+            <span class="ps-num">03</span>
+            <div class="ps-info"><div class="ps-name">Model Training</div><div class="ps-file">model.py</div></div>
+          </div>
+          <div class="ps" data-idx="3">
+            <span class="ps-num">04</span>
+            <div class="ps-info"><div class="ps-name">Backtesting</div><div class="ps-file">backtest.py</div></div>
+          </div>
+          <div class="ps" data-idx="4">
+            <span class="ps-num">05</span>
+            <div class="ps-info"><div class="ps-name">AI Report</div><div class="ps-file">reporter.py</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="pipeline-detail" id="pipeline-detail">
+        <div class="pd-title" id="pd-title">Data Load</div>
+        <div class="pd-body" id="pd-body">Downloads 10 years of Nifty 50 OHLCV data via yfinance. Stores locally for caching. Data spans from 2014 to present and forms the foundation for all feature engineering and model training.</div>
+        <div class="pd-code" id="pd-code">yf.download("^NSEI", period="10y", interval="1d")</div>
+      </div>
+    </div>
+
+    <div class="features-wrap">
+      <div>
+        <div class="s-label">Feature importance</div>
+        <div class="s-heading" style="font-size:22px;margin-bottom:24px">What the model reads</div>
+        {% set feats=[
+          ("RSI_14",0.217,"Momentum oscillator — overbought/oversold"),
+          ("SMA_20",0.198,"Short-term trend direction"),
+          ("SMA_50",0.185,"Medium-term trend baseline"),
+          ("BB_upper",0.162,"Bollinger upper band — resistance"),
+          ("BB_lower",0.148,"Bollinger lower band — support"),
+          ("Volatility_20",0.090,"20-day rolling std deviation"),
+        ]%}
+        {% for name,imp,desc in feats %}
+        <div class="feat-row">
+          <div class="feat-top">
+            <span class="feat-name">{{ name }}</span>
+            <span class="feat-pct">{{ "%.1f"|format(imp*100) }}%</span>
+          </div>
+          <div class="feat-bar-track">
+            <div class="feat-bar-fill" data-width="{{ (imp/0.217*100)|int }}%"></div>
+          </div>
+          <div class="feat-desc">{{ desc }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div>
+        <div class="s-label">Design decisions</div>
+        <div class="s-heading" style="font-size:22px;margin-bottom:24px">Built to be honest</div>
+        <div class="decision-list">
+          <div class="ditem">
+            <div class="ditem-title">No look-ahead bias</div>
+            <div class="ditem-body">Strict chronological 80/20 split. The model never sees a single test-period data point during training.</div>
+          </div>
+          <div class="ditem">
+            <div class="ditem-title">Balanced class weights</div>
+            <div class="ditem-body"><code style="font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px">class_weight='balanced'</code> corrects for any up/down day imbalance in training data.</div>
+          </div>
+          <div class="ditem">
+            <div class="ditem-title">Multiplicative compounding</div>
+            <div class="ditem-body">Returns compound daily — same method as the benchmark — for a mathematically fair comparison.</div>
+          </div>
+          <div class="ditem">
+            <div class="ditem-title">Daily cache layer</div>
+            <div class="ditem-body">Pipeline output cached to JSON. Re-runs only when the calendar date changes. Zero redundant API calls.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <div class="cta-band-text">
+    <h2>Talk to the AI analyst.</h2>
+    <p>Ask about risks, improvements, Sharpe ratio, overfitting — anything about the strategy. Powered by Groq LLaMA 3.1.</p>
+  </div>
+  <div class="cta-band-actions">
+    <a href="/chat" class="btn btn-green">Open AI Report</a>
+    <a href="/dashboard" class="btn btn-secondary" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.5)">Dashboard →</a>
   </div>
 </div>
 
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">NiftyML</span>
+  <div class="footer-stack">
+    {% for b in ["Python","pandas","scikit-learn","yfinance","Flask","Groq API","llama-3.1-8b","Random Forest","matplotlib"] %}
+    <span class="f-chip">{{ b }}</span>
+    {% endfor %}
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script>
+/* Candlestick background */
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, candles = [];
+
+  function resize(){
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', () => { resize(); buildCandles(); });
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+
+  function buildCandles(){
+    candles = [];
+    const count = Math.floor(W/26);
+    let price = 200;
+    for(let i=0;i<count;i++){
+      const change = rand(-18,20);
+      const open  = price;
+      price = Math.max(60, price + change);
+      const close = price;
+      const high  = Math.max(open,close) + rand(2,14);
+      const low   = Math.min(open,close) - rand(2,14);
+      candles.push({ open, close, high, low, x: i*26+13, progress:0, speed: rand(.01,.022) });
+    }
+  }
+  buildCandles();
+
+  function draw(t){
+    ctx.clearRect(0,0,W,H);
+    const minP = Math.min(...candles.map(c=>c.low));
+    const maxP = Math.max(...candles.map(c=>c.high));
+    const range = maxP - minP || 1;
+    const pad = 32;
+    function py(p){ return H - pad - ((p - minP)/range)*(H - pad*2); }
+
+    candles.forEach(c=>{
+      c.progress = Math.min(1, c.progress + c.speed);
+      if(c.progress < 1) return;
+      const x = c.x;
+      const isUp = c.close >= c.open;
+      const alpha = .65;
+      const color = isUp ? `rgba(74,222,128,${alpha})` : `rgba(248,113,113,${alpha*.85})`;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();ctx.moveTo(x, py(c.high));ctx.lineTo(x, py(c.low));ctx.stroke();
+      const bodyTop = py(Math.max(c.open, c.close));
+      const bodyH   = Math.max(2, Math.abs(py(c.open) - py(c.close)));
+      ctx.fillStyle = color;
+      ctx.beginPath();ctx.roundRect(x-5, bodyTop, 10, bodyH, 2);ctx.fill();
+    });
+
+    candles.forEach(c => { c.x -= 0.15; });
+    if(candles[0].x < -13){
+      candles.shift();
+      const last = candles[candles.length-1];
+      const newClose = Math.max(60, last.close + rand(-18,20));
+      candles.push({
+        open:last.close, close:newClose,
+        high:Math.max(last.close,newClose)+rand(2,14),
+        low: Math.min(last.close,newClose)-rand(2,14),
+        x:last.x+26, progress:0, speed:rand(.01,.022)
+      });
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+/* Pipeline tabs */
+const pData=[
+  {title:'Data Load', body:'Downloads 10 years of Nifty 50 OHLCV data via yfinance. Stores locally for caching. Covers 2014–present.', code:'yf.download("^NSEI", period="10y", interval="1d")'},
+  {title:'Feature Engineering', body:'Computes 6 technical indicators: SMA(20), SMA(50), RSI(14), Bollinger Bands (upper/lower), and 20-day rolling volatility. Adds binary target label.', code:'df["SMA_20"] = df["Close"].rolling(20).mean()\ndf["RSI_14"] = compute_rsi(df["Close"], 14)'},
+  {title:'Model Training', body:'Random Forest Classifier with 100 estimators. Chronological 80/20 train/test split. class_weight="balanced" handles class imbalance.', code:'RandomForestClassifier(n_estimators=100,\n  class_weight="balanced", random_state=42)'},
+  {title:'Backtesting', body:'Simulates daily trades based on model signals. Computes cumulative equity curve vs buy-and-hold. Calculates Sharpe ratio, max drawdown, and win rate.', code:'results["Strategy_Return"] = predictions * results["Market_Return"]\nresults["Cumulative_Strategy"] = (1+results["Strategy_Return"]).cumprod()'},
+  {title:'AI Report', body:'Passes all metrics to Groq LLaMA 3.1. Generates quantitative analysis. Also available as an interactive chat interface.', code:'client.chat.completions.create(\n  model="llama-3.1-8b-instant",\n  messages=[{"role":"user","content":prompt}]\n)'},
+];
+document.querySelectorAll('.ps').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.ps').forEach(p=>p.classList.remove('active-ps'));
+    el.classList.add('active-ps');
+    const d=pData[+el.dataset.idx];
+    document.getElementById('pd-title').textContent=d.title;
+    document.getElementById('pd-body').textContent=d.body;
+    document.getElementById('pd-code').textContent=d.code;
+  });
+});
+
+/* Animate bars on scroll */
+function animateOnScroll(selector){
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.style.transition='width 1.1s cubic-bezier(.25,.46,.45,.94)';
+        e.target.style.width=e.target.getAttribute('data-width');
+        io.unobserve(e.target);
+      }
+    });
+  },{threshold:.3});
+  document.querySelectorAll(selector).forEach(el=>{
+    el.style.width='0';
+    io.observe(el);
+  });
+}
+animateOnScroll('.rb-fill');
+animateOnScroll('.feat-bar-fill');
+</script>
 {% endblock %}
