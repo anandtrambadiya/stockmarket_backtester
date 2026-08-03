@@ -2,372 +2,151 @@
 {% block title %}NiftyML — ML-Powered Nifty 50 Trading Strategy{% endblock %}
 {% block head %}
 <style>
-/* ═══════════════════════════════════════════════════
-   DARK THEME OVERRIDE — full page, no seam possible
-═══════════════════════════════════════════════════ */
-body.page-index{
-  --bg:       #09090B;
-  --bg2:      #111113;
-  --bg3:      #1C1C1F;
-  --surface:  #141416;
-  --border:   rgba(255,255,255,.08);
-  --border2:  rgba(255,255,255,.12);
-  --ink:      #FFFFFF;
-  --ink2:     #F4F4F5;
-  --text:     rgba(255,255,255,.92);
-  --text2:    rgba(255,255,255,.45);
-  --text3:    rgba(255,255,255,.25);
-  --green:    #4ADE80;
-  --green-bg: rgba(74,222,128,.08);
-  --green-bd: rgba(74,222,128,.2);
-  --red:      #F87171;
-  --red-bg:   rgba(248,113,113,.08);
-  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
-  --shadow:   0 1px 3px rgba(0,0,0,.5),0 1px 2px rgba(0,0,0,.4);
-  --shadow-md:0 4px 24px rgba(0,0,0,.6),0 2px 8px rgba(0,0,0,.4);
-  background:#09090B;
-}
-
-/* Nav goes dark on index */
-body.page-index nav{
-  background:rgba(9,9,11,.8);
-  border-bottom:1px solid rgba(255,255,255,.07);
-}
-body.page-index .nav-logo-text{color:#fff}
-body.page-index nav a{color:rgba(255,255,255,.45)}
-body.page-index nav a:hover{color:#fff;background:rgba(255,255,255,.07)}
-body.page-index nav a.active{color:#fff;background:rgba(255,255,255,.07)}
-body.page-index .nav-logo-mark{background:#fff}
-body.page-index .nav-logo-mark svg polyline{stroke:#09090B}
-body.page-index .nav-cta{background:#4ADE80!important;color:#09090B!important}
-body.page-index .nav-cta:hover{opacity:.9!important}
-
-/* ═══════════════════
-   HERO
-═══════════════════ */
+/* ═══════════════════ HERO ═══════════════════ */
 .hero{
-  height:calc(100vh - 56px);
-  min-height:620px;
-  background:#09090B;
-  display:flex;flex-direction:column;
-  justify-content:space-between;
+  min-height:calc(100vh - var(--nav-h));
+  display:flex;flex-direction:column;justify-content:space-between;
   position:relative;overflow:hidden;
 }
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.42;pointer-events:none;animation:fadeIn 1.6s ease .1s both}
+.hero-glow{position:absolute;width:680px;height:680px;left:-160px;top:50%;transform:translateY(-50%);
+  background:radial-gradient(circle, rgba(76,141,255,.12) 0%, transparent 70%);pointer-events:none;z-index:1}
+.hero-vignette{position:absolute;bottom:0;left:0;right:0;height:220px;background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:1}
 
-#hero-canvas{
-  position:absolute;inset:0;
-  width:100%;height:100%;
-  opacity:.4;pointer-events:none;
-}
-
-/* Left-side radial glow — feels like a light source */
-.hero-glow{
-  position:absolute;
-  width:600px;height:600px;
-  left:-120px;top:50%;transform:translateY(-50%);
-  background:radial-gradient(circle, rgba(74,222,128,.07) 0%, transparent 70%);
-  pointer-events:none;z-index:1;
-}
-
-/* Bottom fade so the stat strip doesn't feel cut off */
-.hero-vignette{
-  position:absolute;bottom:0;left:0;right:0;height:180px;
-  background:linear-gradient(to bottom, transparent, rgba(9,9,11,.6));
-  pointer-events:none;z-index:1;
-}
-.hero-vignette2{display:none}
-
-/* Center content */
 .hero-inner{
-  position:relative;z-index:2;
-  max-width:1160px;margin:0 auto;width:100%;
-  padding:0 64px;
-  flex:1;
-  display:flex;flex-direction:column;justify-content:center;
-  padding-top:56px;padding-bottom:24px;
+  position:relative;z-index:2;max-width:1160px;margin:0 auto;width:100%;
+  padding:0 64px;flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding-top:64px;padding-bottom:28px;
 }
-
-/* Entrance animations */
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(24px)}
-  to{opacity:1;transform:translateY(0)}
-}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.hero-badge{animation:fadeUp .7s cubic-bezier(.16,1,.3,1) .05s both}
+.hero-h1{animation:fadeUp .9s cubic-bezier(.16,1,.3,1) .18s both}
+.hero-sub{animation:fadeUp .9s cubic-bezier(.16,1,.3,1) .32s both}
+.hero-cta{animation:fadeUp .9s cubic-bezier(.16,1,.3,1) .44s both}
+.hero-stat-strip{animation:fadeIn .8s ease .7s both}
 
-.hero-badge   { animation: fadeUp .7s cubic-bezier(.16,1,.3,1) .05s both }
-.hero-h1      { animation: fadeUp .9s cubic-bezier(.16,1,.3,1) .18s both }
-.hero-sub     { animation: fadeUp .9s cubic-bezier(.16,1,.3,1) .32s both }
-.hero-cta     { animation: fadeUp .9s cubic-bezier(.16,1,.3,1) .44s both }
-.hero-stat-strip { animation: fadeIn .8s ease .7s both }
-#hero-canvas  { animation: fadeIn 1.6s ease .1s both }
+.hero-badge{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(148,178,255,.06);border:1px solid var(--border2);
+  border-radius:100px;padding:7px 16px;margin-bottom:36px;width:fit-content}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--brand-2);box-shadow:0 0 0 3px var(--brand-bg);animation:pulseb 2s ease-in-out infinite}
+@keyframes pulseb{0%,100%{box-shadow:0 0 0 3px var(--brand-bg)}50%{box-shadow:0 0 0 7px transparent}}
+.hero-badge span{font-size:11px;font-weight:500;color:var(--text2);letter-spacing:.05em}
 
-.hero-badge{
-  display:inline-flex;align-items:center;gap:8px;
-  background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:100px;padding:6px 16px;
-  margin-bottom:36px;width:fit-content;
-}
-.hero-badge-dot{
-  width:6px;height:6px;border-radius:50%;
-  background:#4ADE80;
-  box-shadow:0 0 0 3px rgba(74,222,128,.2);
-  animation:pulse 2s ease-in-out infinite;
-}
-@keyframes pulse{
-  0%,100%{box-shadow:0 0 0 3px rgba(74,222,128,.2)}
-  50%{box-shadow:0 0 0 7px rgba(74,222,128,0)}
-}
-.hero-badge span{
-  font-size:11px;font-weight:500;
-  color:rgba(255,255,255,.45);letter-spacing:.05em;
-}
-
-.hero-h1{
-  font-size:clamp(48px,7.5vw,100px);
-  font-weight:800;line-height:1.02;
-  letter-spacing:-.04em;color:#fff;
-  margin-bottom:28px;
-  max-width:900px;
-}
-.hero-h1 .accent{ color:#4ADE80 }
-
-.hero-sub{
-  font-size:16px;
-  color:rgba(255,255,255,.38);
-  line-height:1.75;
-  max-width:520px;
-  margin-bottom:40px;
-}
-.hero-sub strong{color:rgba(255,255,255,.65);font-weight:500}
-
+.hero-h1{font-family:var(--display);font-size:clamp(46px,7vw,96px);font-weight:800;line-height:1.03;letter-spacing:-.04em;color:var(--ink);margin-bottom:28px;max-width:920px}
+.hero-h1 .accent{background:linear-gradient(90deg,var(--brand),var(--brand-3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:16px;color:var(--text2);line-height:1.75;max-width:520px;margin-bottom:40px}
+.hero-sub strong{color:var(--text);font-weight:500}
 .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
 
-/* ── Stat strip — seamlessly dark ── */
-.hero-stat-strip{
-  position:relative;z-index:2;
-  border-top:1px solid rgba(255,255,255,.06);
-}
-.stat-strip-inner{
-  max-width:1160px;margin:0 auto;
-  padding:0 64px;
-  display:grid;grid-template-columns:repeat(4,1fr);
-}
-.hstat{
-  padding:24px 0;
-  border-right:1px solid rgba(255,255,255,.06);
-  padding-left:28px;
-}
+.hero-stat-strip{position:relative;z-index:2;border-top:1px solid var(--border)}
+.stat-strip-inner{max-width:1160px;margin:0 auto;padding:0 64px;display:grid;grid-template-columns:repeat(4,1fr)}
+.hstat{padding:26px 0;border-right:1px solid var(--border);padding-left:28px}
 .hstat:first-child{padding-left:0}
 .hstat:last-child{border-right:none}
-.hstat-val{
-  font-family:var(--mono);font-size:22px;font-weight:600;
-  color:#fff;line-height:1;margin-bottom:6px;
-  letter-spacing:-.02em;
-}
-.hstat-val.g{color:#4ADE80}
-.hstat-val.r{color:#F87171}
-.hstat-lbl{
-  font-size:10px;color:rgba(255,255,255,.28);
-  letter-spacing:.14em;text-transform:uppercase;
-}
+.hstat-val{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--ink);line-height:1;margin-bottom:6px;letter-spacing:-.02em}
+.hstat-val.g{color:var(--up)}
+.hstat-val.b{color:var(--brand-2)}
+.hstat-val.r{color:var(--down)}
+.hstat-lbl{font-size:10px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase}
 
-/* ═══════════════════════════════
-   PRODUCT SECTION — also dark, no seam
-═══════════════════════════════ */
-.product-section{
-  background:var(--bg);
-  padding:96px 48px;
-}
+/* ═══════════════ PRODUCT ═══════════════ */
+.product-section{padding:100px 48px}
 .ps-inner{max-width:1160px;margin:0 auto}
-
-.s-label{
-  font-family:var(--mono);font-size:10px;font-weight:500;
-  letter-spacing:.16em;text-transform:uppercase;
-  color:var(--text3);margin-bottom:10px;
-}
-.s-heading{
-  font-size:clamp(28px,3.5vw,40px);font-weight:800;
-  letter-spacing:-.025em;color:var(--ink);line-height:1.12;
-  margin-bottom:12px;
-}
+.s-label{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--brand-2);margin-bottom:10px}
+.s-heading{font-family:var(--display);font-size:clamp(28px,3.5vw,40px);font-weight:800;letter-spacing:-.025em;color:var(--ink);line-height:1.12;margin-bottom:12px}
 .s-sub{font-size:15px;color:var(--text2);line-height:1.7;max-width:480px}
 
-/* ── Metrics ── */
-.metrics-row{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  gap:12px;margin:56px 0;
-}
-.mcard{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:22px 20px;
-  position:relative;overflow:hidden;
-  transition:border-color .2s,transform .2s;
-}
-.mcard:hover{border-color:var(--border2);transform:translateY(-2px)}
-.mcard::after{
-  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
-}
-.mcard.pos::after{background:linear-gradient(90deg,transparent,#4ADE80,transparent)}
-.mcard.neg::after{background:linear-gradient(90deg,transparent,#F87171,transparent)}
-.mc-tag{
-  font-family:var(--mono);font-size:9px;font-weight:500;
-  letter-spacing:.14em;text-transform:uppercase;
-  color:var(--text3);margin-bottom:12px;
-}
-.mc-big{
-  font-family:var(--mono);font-size:30px;font-weight:700;
-  line-height:1;letter-spacing:-.01em;margin-bottom:8px;
-}
-.mc-big.pos{color:#4ADE80}
-.mc-big.neg{color:#F87171}
-.mc-big.neu{color:var(--ink)}
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:56px 0}
+.mcard{background:linear-gradient(160deg,var(--surface2),var(--surface));
+  border:1px solid var(--border);border-radius:var(--radius);padding:24px 22px;
+  position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.mcard:hover{border-color:var(--border2)}
+.mcard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px}
+.mcard.pos::after{background:linear-gradient(90deg,transparent,var(--up),transparent)}
+.mcard.neg::after{background:linear-gradient(90deg,transparent,var(--down),transparent)}
+.mcard.brand::after{background:linear-gradient(90deg,transparent,var(--brand),transparent)}
+.mc-tag{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+.mc-big{font-family:var(--mono);font-size:32px;font-weight:700;line-height:1;letter-spacing:-.01em;margin-bottom:8px}
+.mc-big.pos{color:var(--up)}
+.mc-big.neg{color:var(--down)}
+.mc-big.neu{color:var(--brand-2)}
 .mc-note{font-size:11px;color:var(--text2);line-height:1.4}
 
-/* ── Compare ── */
-.compare-wrap{
-  display:grid;grid-template-columns:5fr 4fr;
-  gap:48px;align-items:center;
-  padding:56px 0;border-top:1px solid var(--border);
-}
-.compare-heading{
-  font-size:clamp(26px,3vw,38px);font-weight:800;
-  letter-spacing:-.025em;line-height:1.12;
-  color:var(--ink);margin-bottom:16px;
-}
-.compare-heading .g{color:#4ADE80}
-.compare-heading .r{color:#F87171}
+.compare-wrap{display:grid;grid-template-columns:5fr 4fr;gap:48px;align-items:center;padding:56px 0;border-top:1px solid var(--border)}
+.compare-heading{font-family:var(--display);font-size:clamp(26px,3vw,38px);font-weight:800;letter-spacing:-.025em;line-height:1.12;color:var(--ink);margin-bottom:16px}
+.compare-heading .g{color:var(--up)}
+.compare-heading .r{color:var(--down)}
 .compare-body{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:24px}
 .compare-body strong{color:var(--ink);font-weight:600}
-
-.retbars{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:24px;
-}
+.retbars{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
 .rb-row{margin-bottom:20px}
 .rb-row:last-child{margin-bottom:0}
-.rb-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.rb-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
 .rb-name{font-size:13px;font-weight:500;color:var(--text)}
 .rb-val{font-family:var(--mono);font-size:13px;font-weight:600}
-.rb-val.g{color:#4ADE80}
-.rb-val.r{color:#F87171}
-.rb-track{height:6px;background:var(--bg3);border-radius:100px;overflow:hidden}
+.rb-val.g{color:var(--up)}
+.rb-val.r{color:var(--down)}
+.rb-track{height:7px;background:var(--bg3);border-radius:100px;overflow:hidden}
 .rb-fill{height:100%;border-radius:100px;width:0;transition:width 1.2s cubic-bezier(.25,.46,.45,.94)}
-.rb-fill.g{background:#4ADE80}
-.rb-fill.r{background:#F87171}
-.alpha-chip{
-  margin-top:20px;padding:16px;
-  background:var(--green-bg);border:1px solid var(--green-bd);
-  border-radius:8px;display:flex;align-items:center;justify-content:space-between;
-}
-.alpha-chip-label{font-size:12px;color:#4ADE80;font-weight:500}
-.alpha-chip-val{font-family:var(--mono);font-size:22px;font-weight:700;color:#4ADE80}
+.rb-fill.g{background:linear-gradient(90deg,var(--up-2),var(--up))}
+.rb-fill.r{background:var(--down)}
+.alpha-chip{margin-top:22px;padding:17px;background:var(--brand-bg);border:1px solid var(--brand-bd);border-radius:12px;display:flex;align-items:center;justify-content:space-between}
+.alpha-chip-label{font-size:12px;color:var(--brand-2);font-weight:500}
+.alpha-chip-val{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--brand-2)}
 
-/* ── Pipeline ── */
-.pipeline-wrap{
-  padding:56px 0;border-top:1px solid var(--border);
-  display:grid;grid-template-columns:200px 1fr;gap:48px;align-items:start;
-}
-.pipeline-steps{display:flex;flex-direction:column;gap:1px}
-.ps{
-  display:flex;gap:14px;align-items:flex-start;
-  padding:14px 16px;border-radius:8px;
-  cursor:pointer;transition:background .15s;
-}
-.ps:hover,.ps.active-ps{background:var(--surface);border:1px solid var(--border)}
-.ps-num{
-  font-family:var(--mono);font-size:11px;color:var(--text3);
-  min-width:24px;padding-top:1px;
-}
+.pipeline-wrap{padding:56px 0;border-top:1px solid var(--border);display:grid;grid-template-columns:220px 1fr;gap:48px;align-items:start}
+.pipeline-steps{display:flex;flex-direction:column;gap:2px}
+.ps{display:flex;gap:14px;align-items:flex-start;padding:15px 16px;border-radius:11px;cursor:pointer;transition:background .15s,border-color .15s;border:1px solid transparent}
+.ps:hover,.ps.active-ps{background:var(--surface);border-color:var(--border)}
+.ps.active-ps{box-shadow:inset 3px 0 0 var(--brand)}
+.ps-num{font-family:var(--mono);font-size:11px;color:var(--text3);min-width:24px;padding-top:1px}
 .ps-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
-.ps-file{font-family:var(--mono);font-size:10px;color:#4ADE80}
-.pipeline-detail{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:28px;
-}
-.pd-title{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:8px}
+.ps-file{font-family:var(--mono);font-size:10px;color:var(--brand-2)}
+.pipeline-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow)}
+.pd-title{font-family:var(--display);font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:8px}
 .pd-body{font-size:14px;color:var(--text2);line-height:1.8}
-.pd-code{
-  margin-top:14px;background:var(--bg3);border:1px solid var(--border);
-  border-radius:6px;padding:12px 14px;
-  font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.5);
-}
+.pd-code{margin-top:16px;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:14px 16px;font-family:var(--mono);font-size:12px;color:var(--text2);white-space:pre-wrap}
 
-/* ── Features ── */
-.features-wrap{
-  padding:56px 0;border-top:1px solid var(--border);
-  display:grid;grid-template-columns:1fr 1fr;gap:64px;
-}
+.features-wrap{padding:56px 0;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:64px}
 .feat-row{margin-bottom:18px}
 .feat-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
 .feat-name{font-family:var(--mono);font-size:12px;color:var(--text)}
 .feat-pct{font-family:var(--mono);font-size:11px;color:var(--text3)}
-.feat-bar-track{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
-.feat-bar-fill{height:100%;background:#4ADE80;border-radius:3px;width:0}
-.feat-desc{font-size:11px;color:var(--text2);margin-top:3px}
-
-.decision-list{display:flex;flex-direction:column;gap:8px}
-.ditem{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:8px;padding:14px 16px;
-}
+.feat-bar-track{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.feat-bar-fill{height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-3));border-radius:3px;width:0}
+.feat-desc{font-size:11px;color:var(--text2);margin-top:4px}
+.decision-list{display:flex;flex-direction:column;gap:10px}
+.ditem{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:15px 17px}
 .ditem-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px}
 .ditem-body{font-size:12px;color:var(--text2);line-height:1.6}
 
-/* ── CTA Band ── */
-.cta-band{
-  background:var(--bg2);
-  border-top:1px solid var(--border);
-  border-bottom:1px solid var(--border);
-  padding:72px 48px;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:32px;
-}
-.cta-band-text h2{
-  font-size:clamp(24px,3vw,36px);font-weight:800;
-  letter-spacing:-.025em;color:#fff;margin-bottom:10px;
-}
-.cta-band-text p{font-size:14px;color:rgba(255,255,255,.38);max-width:400px;line-height:1.7}
+.cta-band{background:linear-gradient(160deg,var(--bg2),var(--bg));border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:32px}
+.cta-band-text h2{font-family:var(--display);font-size:clamp(24px,3vw,36px);font-weight:800;letter-spacing:-.025em;color:var(--ink);margin-bottom:10px}
+.cta-band-text p{font-size:14px;color:var(--text2);max-width:400px;line-height:1.7}
 .cta-band-actions{display:flex;gap:12px;flex-wrap:wrap}
 
-/* ── Footer ── */
-footer{
-  background:var(--bg);
-  border-top:1px solid var(--border);
-  padding:28px 48px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
-}
-.footer-logo{font-size:14px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:-.01em}
+footer{padding:32px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.footer-logo{font-family:var(--display);font-size:14px;font-weight:700;color:var(--text3);letter-spacing:-.01em}
 .footer-stack{display:flex;flex-wrap:wrap;gap:6px}
-.f-chip{
-  font-family:var(--mono);font-size:10px;
-  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
-  border-radius:100px;padding:3px 10px;color:rgba(255,255,255,.3);
-}
-
-/* Shared btn overrides for dark page */
-body.page-index .btn-primary{background:#fff;color:#09090B}
-body.page-index .btn-primary:hover{opacity:.88}
-body.page-index .btn-green{background:#4ADE80;color:#09090B}
+.f-chip{font-family:var(--mono);font-size:10px;background:rgba(148,178,255,.04);border:1px solid var(--border);border-radius:100px;padding:4px 11px;color:var(--text3)}
 
 @media(max-width:960px){
-  .hero-inner{padding:40px 24px 20px}
+  .hero-inner{padding:48px 24px 24px}
   .stat-strip-inner{padding:0 24px;grid-template-columns:repeat(2,1fr)}
-  .hstat{padding:18px 0 18px 16px}
+  .hstat{padding:20px 0 20px 16px}
   .hstat:first-child,.hstat:nth-child(3){padding-left:0}
+  .hstat:nth-child(2){border-right:none}
   .product-section{padding:64px 24px}
   .metrics-row{grid-template-columns:1fr 1fr}
-  .compare-wrap{grid-template-columns:1fr}
-  .pipeline-wrap{grid-template-columns:1fr}
-  .features-wrap{grid-template-columns:1fr}
-  .cta-band{padding:48px 24px}
-  footer{padding:24px}
+  .compare-wrap,.pipeline-wrap,.features-wrap{grid-template-columns:1fr}
+  .cta-band{padding:56px 24px}
+  footer{padding:28px 24px}
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<script>document.body.classList.add('page-index')</script>
 
 <!-- ════════════════════ HERO ════════════════════ -->
 <section class="hero">
@@ -395,28 +174,16 @@ body.page-index .btn-green{background:#4ADE80;color:#09090B}
 
     <div class="hero-cta">
       <a href="/dashboard" class="btn btn-primary">View Dashboard</a>
-      <a href="/chat" class="btn btn-secondary" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.6)">Ask AI Analyst →</a>
+      <a href="/chat" class="btn btn-secondary">Ask AI Analyst →</a>
     </div>
   </div>
 
   <div class="hero-stat-strip">
     <div class="stat-strip-inner">
-      <div class="hstat">
-        <div class="hstat-val g">54.2%</div>
-        <div class="hstat-lbl">Accuracy</div>
-      </div>
-      <div class="hstat">
-        <div class="hstat-val g">1.159</div>
-        <div class="hstat-lbl">Sharpe Ratio</div>
-      </div>
-      <div class="hstat">
-        <div class="hstat-val r">−5.3%</div>
-        <div class="hstat-lbl">Max Drawdown</div>
-      </div>
-      <div class="hstat">
-        <div class="hstat-val g">53.4%</div>
-        <div class="hstat-lbl">Win Rate</div>
-      </div>
+      <div class="hstat"><div class="hstat-val g">54.2%</div><div class="hstat-lbl">Accuracy</div></div>
+      <div class="hstat"><div class="hstat-val b">1.159</div><div class="hstat-lbl">Sharpe Ratio</div></div>
+      <div class="hstat"><div class="hstat-val r">−5.3%</div><div class="hstat-lbl">Max Drawdown</div></div>
+      <div class="hstat"><div class="hstat-val g">53.4%</div><div class="hstat-lbl">Win Rate</div></div>
     </div>
   </div>
 </section>
@@ -425,26 +192,26 @@ body.page-index .btn-green{background:#4ADE80;color:#09090B}
 <section class="product-section">
   <div class="ps-inner">
 
-    <div class="s-label">Performance metrics</div>
-    <div class="s-heading">Results that speak.</div>
+    <div class="s-label reveal">Performance metrics</div>
+    <div class="s-heading reveal">Results that speak.</div>
 
     <div class="metrics-row">
-      <div class="mcard pos">
+      <div class="mcard pos reveal" data-tilt>
         <div class="mc-tag">Model Accuracy</div>
         <div class="mc-big pos">54.2%</div>
         <div class="mc-note">+4.2pp above 50% random baseline</div>
       </div>
-      <div class="mcard pos">
+      <div class="mcard brand reveal" data-tilt>
         <div class="mc-tag">Sharpe Ratio</div>
         <div class="mc-big neu">1.159</div>
         <div class="mc-note">Above 1.0 — strong risk-adjusted return</div>
       </div>
-      <div class="mcard neg">
+      <div class="mcard neg reveal" data-tilt>
         <div class="mc-tag">Max Drawdown</div>
         <div class="mc-big neg">−5.3%</div>
         <div class="mc-note">Peak-to-trough. Controlled downside exposure.</div>
       </div>
-      <div class="mcard pos">
+      <div class="mcard pos reveal" data-tilt>
         <div class="mc-tag">Win Rate</div>
         <div class="mc-big pos">53.4%</div>
         <div class="mc-note">Majority of daily signals profitable</div>
@@ -452,7 +219,7 @@ body.page-index .btn-green{background:#4ADE80;color:#09090B}
     </div>
 
     <div class="compare-wrap">
-      <div>
+      <div class="reveal">
         <div class="s-label">Strategy vs Benchmark</div>
         <div class="compare-heading">
           <span class="g">+24%</span> vs <span class="r">−12.7%</span>.<br/>
@@ -467,29 +234,23 @@ body.page-index .btn-green{background:#4ADE80;color:#09090B}
         </p>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <a href="/dashboard" class="btn btn-primary">Full dashboard</a>
-          <a href="/chat" class="btn btn-secondary" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.5)">AI analysis →</a>
+          <a href="/chat" class="btn btn-secondary">AI analysis →</a>
         </div>
       </div>
-      <div>
+      <div class="reveal">
         <div class="retbars">
           <div class="rb-row">
-            <div class="rb-top">
-              <span class="rb-name">ML Strategy</span>
-              <span class="rb-val g">+24.0%</span>
-            </div>
+            <div class="rb-top"><span class="rb-name">ML Strategy</span><span class="rb-val g">+24.0%</span></div>
             <div class="rb-track"><div class="rb-fill g" data-width="84%"></div></div>
           </div>
           <div class="rb-row">
-            <div class="rb-top">
-              <span class="rb-name">Buy &amp; Hold (Nifty 50)</span>
-              <span class="rb-val r">−12.7%</span>
-            </div>
+            <div class="rb-top"><span class="rb-name">Buy &amp; Hold (Nifty 50)</span><span class="rb-val r">−12.7%</span></div>
             <div class="rb-track"><div class="rb-fill r" data-width="30%"></div></div>
           </div>
           <div class="alpha-chip">
             <div>
               <div class="alpha-chip-label">Alpha over benchmark</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:2px">Strategy − Buy&amp;hold · same period</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Strategy − Buy&amp;hold · same period</div>
             </div>
             <div class="alpha-chip-val">+36.7pp</div>
           </div>
@@ -498,32 +259,17 @@ body.page-index .btn-green{background:#4ADE80;color:#09090B}
     </div>
 
     <div class="pipeline-wrap">
-      <div>
+      <div class="reveal">
         <div class="s-label" style="margin-bottom:20px">How it works</div>
         <div class="pipeline-steps" id="pipeline-steps">
-          <div class="ps active-ps" data-idx="0">
-            <span class="ps-num">01</span>
-            <div class="ps-info"><div class="ps-name">Data Load</div><div class="ps-file">data_loader.py</div></div>
-          </div>
-          <div class="ps" data-idx="1">
-            <span class="ps-num">02</span>
-            <div class="ps-info"><div class="ps-name">Feature Engineering</div><div class="ps-file">features.py</div></div>
-          </div>
-          <div class="ps" data-idx="2">
-            <span class="ps-num">03</span>
-            <div class="ps-info"><div class="ps-name">Model Training</div><div class="ps-file">model.py</div></div>
-          </div>
-          <div class="ps" data-idx="3">
-            <span class="ps-num">04</span>
-            <div class="ps-info"><div class="ps-name">Backtesting</div><div class="ps-file">backtest.py</div></div>
-          </div>
-          <div class="ps" data-idx="4">
-            <span class="ps-num">05</span>
-            <div class="ps-info"><div class="ps-name">AI Report</div><div class="ps-file">reporter.py</div></div>
-          </div>
+          <div class="ps active-ps" data-idx="0"><span class="ps-num">01</span><div class="ps-info"><div class="ps-name">Data Load</div><div class="ps-file">data_loader.py</div></div></div>
+          <div class="ps" data-idx="1"><span class="ps-num">02</span><div class="ps-info"><div class="ps-name">Feature Engineering</div><div class="ps-file">features.py</div></div></div>
+          <div class="ps" data-idx="2"><span class="ps-num">03</span><div class="ps-info"><div class="ps-name">Model Training</div><div class="ps-file">model.py</div></div></div>
+          <div class="ps" data-idx="3"><span class="ps-num">04</span><div class="ps-info"><div class="ps-name">Backtesting</div><div class="ps-file">backtest.py</div></div></div>
+          <div class="ps" data-idx="4"><span class="ps-num">05</span><div class="ps-info"><div class="ps-name">AI Report</div><div class="ps-file">reporter.py</div></div></div>
         </div>
       </div>
-      <div class="pipeline-detail" id="pipeline-detail">
+      <div class="pipeline-detail reveal" id="pipeline-detail">
         <div class="pd-title" id="pd-title">Data Load</div>
         <div class="pd-body" id="pd-body">Downloads 10 years of Nifty 50 OHLCV data via yfinance. Stores locally for caching. Data spans from 2014 to present and forms the foundation for all feature engineering and model training.</div>
         <div class="pd-code" id="pd-code">yf.download("^NSEI", period="10y", interval="1d")</div>
@@ -531,7 +277,7 @@ body.page-index .btn-green{background:#4ADE80;color:#09090B}
     </div>
 
     <div class="features-wrap">
-      <div>
+      <div class="reveal">
         <div class="s-label">Feature importance</div>
         <div class="s-heading" style="font-size:22px;margin-bottom:24px">What the model reads</div>
         {% set feats=[
@@ -548,33 +294,19 @@ body.page-index .btn-green{background:#4ADE80;color:#09090B}
             <span class="feat-name">{{ name }}</span>
             <span class="feat-pct">{{ "%.1f"|format(imp*100) }}%</span>
           </div>
-          <div class="feat-bar-track">
-            <div class="feat-bar-fill" data-width="{{ (imp/0.217*100)|int }}%"></div>
-          </div>
+          <div class="feat-bar-track"><div class="feat-bar-fill" data-width="{{ (imp/0.217*100)|int }}%"></div></div>
           <div class="feat-desc">{{ desc }}</div>
         </div>
         {% endfor %}
       </div>
-      <div>
+      <div class="reveal">
         <div class="s-label">Design decisions</div>
         <div class="s-heading" style="font-size:22px;margin-bottom:24px">Built to be honest</div>
         <div class="decision-list">
-          <div class="ditem">
-            <div class="ditem-title">No look-ahead bias</div>
-            <div class="ditem-body">Strict chronological 80/20 split. The model never sees a single test-period data point during training.</div>
-          </div>
-          <div class="ditem">
-            <div class="ditem-title">Balanced class weights</div>
-            <div class="ditem-body"><code style="font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px">class_weight='balanced'</code> corrects for any up/down day imbalance in training data.</div>
-          </div>
-          <div class="ditem">
-            <div class="ditem-title">Multiplicative compounding</div>
-            <div class="ditem-body">Returns compound daily — same method as the benchmark — for a mathematically fair comparison.</div>
-          </div>
-          <div class="ditem">
-            <div class="ditem-title">Daily cache layer</div>
-            <div class="ditem-body">Pipeline output cached to JSON. Re-runs only when the calendar date changes. Zero redundant API calls.</div>
-          </div>
+          <div class="ditem"><div class="ditem-title">No look-ahead bias</div><div class="ditem-body">Strict chronological 80/20 split. The model never sees a single test-period data point during training.</div></div>
+          <div class="ditem"><div class="ditem-title">Balanced class weights</div><div class="ditem-body"><code style="font-family:var(--mono);font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px">class_weight='balanced'</code> corrects for any up/down day imbalance in training data.</div></div>
+          <div class="ditem"><div class="ditem-title">Multiplicative compounding</div><div class="ditem-body">Returns compound daily — same method as the benchmark — for a mathematically fair comparison.</div></div>
+          <div class="ditem"><div class="ditem-title">Daily cache layer</div><div class="ditem-body">Pipeline output cached to JSON. Re-runs only when the calendar date changes. Zero redundant API calls.</div></div>
         </div>
       </div>
     </div>
@@ -584,94 +316,78 @@ body.page-index .btn-green{background:#4ADE80;color:#09090B}
 
 <!-- CTA BAND -->
 <div class="cta-band">
-  <div class="cta-band-text">
+  <div class="cta-band-text reveal">
     <h2>Talk to the AI analyst.</h2>
     <p>Ask about risks, improvements, Sharpe ratio, overfitting — anything about the strategy. Powered by Groq LLaMA 3.1.</p>
   </div>
-  <div class="cta-band-actions">
-    <a href="/chat" class="btn btn-green">Open AI Report</a>
-    <a href="/dashboard" class="btn btn-secondary" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.5)">Dashboard →</a>
+  <div class="cta-band-actions reveal">
+    <a href="/chat" class="btn btn-primary">Open AI Analyst</a>
+    <a href="/dashboard" class="btn btn-secondary">Dashboard →</a>
   </div>
 </div>
 
 <!-- FOOTER -->
 <footer>
-  <span class="footer-logo">NiftyML</span>
+  <span class="footer-logo">Nifty<span style="color:var(--brand-2)">ML</span></span>
   <div class="footer-stack">
-    {% for b in ["Python","pandas","scikit-learn","yfinance","Flask","Groq API","llama-3.1-8b","Random Forest","matplotlib"] %}
+    {% for b in ["Python","pandas","scikit-learn","yfinance","Flask","Groq LLaMA 3.1","Random Forest","matplotlib"] %}
     <span class="f-chip">{{ b }}</span>
     {% endfor %}
   </div>
 </footer>
+{% endblock %}
 
-<!-- SCRIPTS -->
+{% block scripts %}
 <script>
 /* Candlestick background */
 (function(){
-  const canvas = document.getElementById('hero-canvas');
-  const ctx = canvas.getContext('2d');
-  let W, H, candles = [];
-
+  const canvas=document.getElementById('hero-canvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  let W,H,candles=[];
   function resize(){
-    W = canvas.width  = canvas.offsetWidth;
-    H = canvas.height = canvas.offsetHeight;
+    const r=canvas.getBoundingClientRect();
+    const dpr=window.devicePixelRatio||1;
+    W=r.width;H=r.height;
+    canvas.width=W*dpr;canvas.height=H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
   }
   resize();
-  window.addEventListener('resize', () => { resize(); buildCandles(); });
-
-  function rand(a,b){ return a + Math.random()*(b-a); }
-
+  window.addEventListener('resize',()=>{resize();buildCandles()});
+  function rand(a,b){return a+Math.random()*(b-a)}
   function buildCandles(){
-    candles = [];
-    const count = Math.floor(W/26);
-    let price = 200;
+    candles=[];
+    const count=Math.floor(W/26)+2;
+    let price=200;
     for(let i=0;i<count;i++){
-      const change = rand(-18,20);
-      const open  = price;
-      price = Math.max(60, price + change);
-      const close = price;
-      const high  = Math.max(open,close) + rand(2,14);
-      const low   = Math.min(open,close) - rand(2,14);
-      candles.push({ open, close, high, low, x: i*26+13, progress:0, speed: rand(.01,.022) });
+      const change=rand(-18,20);const open=price;price=Math.max(60,price+change);
+      const close=price;const high=Math.max(open,close)+rand(2,14);const low=Math.min(open,close)-rand(2,14);
+      candles.push({open,close,high,low,x:i*26+13,progress:0,speed:rand(.01,.022)});
     }
   }
   buildCandles();
-
-  function draw(t){
+  function draw(){
     ctx.clearRect(0,0,W,H);
-    const minP = Math.min(...candles.map(c=>c.low));
-    const maxP = Math.max(...candles.map(c=>c.high));
-    const range = maxP - minP || 1;
-    const pad = 32;
-    function py(p){ return H - pad - ((p - minP)/range)*(H - pad*2); }
-
+    const minP=Math.min(...candles.map(c=>c.low));
+    const maxP=Math.max(...candles.map(c=>c.high));
+    const range=maxP-minP||1;const pad=32;
+    const py=p=>H-pad-((p-minP)/range)*(H-pad*2);
     candles.forEach(c=>{
-      c.progress = Math.min(1, c.progress + c.speed);
-      if(c.progress < 1) return;
-      const x = c.x;
-      const isUp = c.close >= c.open;
-      const alpha = .65;
-      const color = isUp ? `rgba(74,222,128,${alpha})` : `rgba(248,113,113,${alpha*.85})`;
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1;
-      ctx.beginPath();ctx.moveTo(x, py(c.high));ctx.lineTo(x, py(c.low));ctx.stroke();
-      const bodyTop = py(Math.max(c.open, c.close));
-      const bodyH   = Math.max(2, Math.abs(py(c.open) - py(c.close)));
-      ctx.fillStyle = color;
-      ctx.beginPath();ctx.roundRect(x-5, bodyTop, 10, bodyH, 2);ctx.fill();
+      c.progress=Math.min(1,c.progress+c.speed);
+      if(c.progress<1) return;
+      const x=c.x;const isUp=c.close>=c.open;const alpha=.7;
+      const color=isUp?`rgba(52,211,153,${alpha})`:`rgba(251,113,133,${alpha*.85})`;
+      ctx.strokeStyle=color;ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(x,py(c.high));ctx.lineTo(x,py(c.low));ctx.stroke();
+      const bodyTop=py(Math.max(c.open,c.close));const bodyH=Math.max(2,Math.abs(py(c.open)-py(c.close)));
+      ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x-5,bodyTop,10,bodyH,2);ctx.fill();
     });
-
-    candles.forEach(c => { c.x -= 0.15; });
-    if(candles[0].x < -13){
+    candles.forEach(c=>{c.x-=0.15});
+    if(candles[0].x<-13){
       candles.shift();
-      const last = candles[candles.length-1];
-      const newClose = Math.max(60, last.close + rand(-18,20));
-      candles.push({
-        open:last.close, close:newClose,
-        high:Math.max(last.close,newClose)+rand(2,14),
-        low: Math.min(last.close,newClose)-rand(2,14),
-        x:last.x+26, progress:0, speed:rand(.01,.022)
-      });
+      const last=candles[candles.length-1];
+      const newClose=Math.max(60,last.close+rand(-18,20));
+      candles.push({open:last.close,close:newClose,high:Math.max(last.close,newClose)+rand(2,14),low:Math.min(last.close,newClose)-rand(2,14),x:last.x+26,progress:0,speed:rand(.01,.022)});
     }
     requestAnimationFrame(draw);
   }
@@ -708,10 +424,7 @@ function animateOnScroll(selector){
       }
     });
   },{threshold:.3});
-  document.querySelectorAll(selector).forEach(el=>{
-    el.style.width='0';
-    io.observe(el);
-  });
+  document.querySelectorAll(selector).forEach(el=>{el.style.width='0';io.observe(el)});
 }
 animateOnScroll('.rb-fill');
 animateOnScroll('.feat-bar-fill');

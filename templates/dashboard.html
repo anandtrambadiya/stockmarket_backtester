@@ -2,103 +2,105 @@
 {% block title %}Dashboard — NiftyML{% endblock %}
 {% block head %}
 <style>
-.dash{max-width:1160px;margin:0 auto;padding:40px 48px 80px}
+.dash{max-width:1180px;margin:0 auto;padding:48px 48px 96px}
 
 .dash-header{
   display:flex;align-items:flex-start;justify-content:space-between;
-  margin-bottom:36px;flex-wrap:wrap;gap:16px;
+  margin-bottom:40px;flex-wrap:wrap;gap:16px;
 }
-.dash-title{font-size:24px;font-weight:800;letter-spacing:-.025em;color:var(--ink);margin-bottom:4px}
-.dash-sub{font-size:13px;color:var(--text2)}
+.dash-title{
+  font-family:var(--display);font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.03em;
+  color:var(--ink);margin-bottom:6px;line-height:1.04;
+}
+.dash-title .g{background:linear-gradient(90deg,var(--brand),var(--brand-3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.dash-sub{font-size:13px;color:var(--text2);font-family:var(--mono);letter-spacing:.01em}
 .cache-badge{
-  display:flex;align-items:center;gap:7px;
+  display:flex;align-items:center;gap:8px;
   background:var(--surface);border:1px solid var(--border);
-  border-radius:100px;padding:6px 14px;
-  font-size:12px;color:var(--text2);box-shadow:var(--shadow-sm);
+  border-radius:100px;padding:8px 16px;font-size:12px;color:var(--text2);box-shadow:var(--shadow-sm);
 }
-.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(22,163,74,.15)}50%{box-shadow:0 0 0 6px rgba(22,163,74,0)}}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px var(--up-bg);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px var(--up-bg)}50%{box-shadow:0 0 0 7px transparent}}
 
 /* METRIC GRID */
-.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
 .mc{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:22px 20px;
-  box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
-  transition:box-shadow .2s,transform .2s;
+  background:linear-gradient(160deg,var(--surface2),var(--surface));
+  border:1px solid var(--border);border-radius:var(--radius);padding:24px 22px;
+  box-shadow:var(--shadow);position:relative;overflow:hidden;
 }
-.mc:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-.mc::after{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.mc.pos::after{background:var(--green)}
-.mc.neg::after{background:var(--red)}
-.mc-tag{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
-.mc-val{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1;letter-spacing:-.01em;margin-bottom:8px}
-.mc-val.pos{color:var(--green)}
-.mc-val.neg{color:var(--red)}
-.mc-val.neu{color:var(--ink)}
-.mc-sub{font-size:11px;color:var(--text2);line-height:1.4}
+.mc:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}
+.mc::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(120% 80% at 50% -10%, rgba(148,178,255,.06), transparent 60%)}
+.mc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.mc.pos::after{background:linear-gradient(90deg,transparent,var(--up),transparent)}
+.mc.neg::after{background:linear-gradient(90deg,transparent,var(--down),transparent)}
+.mc.brand::after{background:linear-gradient(90deg,transparent,var(--brand),transparent)}
+.mc-tag{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+.mc-val{font-family:var(--mono);font-size:34px;font-weight:700;line-height:1;letter-spacing:-.02em;margin-bottom:10px}
+.mc-val.pos{color:var(--up)}
+.mc-val.neg{color:var(--down)}
+.mc-val.neu{color:var(--brand-2)}
+.mc-sub{font-size:11.5px;color:var(--text2);line-height:1.5}
 
 /* CHARTS */
-.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-.chart-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);
-}
-.chart-head{
-  padding:14px 18px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:28px 0}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.chart-card:hover{border-color:var(--border2)}
+.chart-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .chart-head-name{font-size:13px;font-weight:600;color:var(--text)}
 .chart-tag{
-  font-family:var(--mono);font-size:9px;font-weight:500;
-  letter-spacing:.1em;text-transform:uppercase;
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:100px;padding:3px 10px;color:var(--text3);
+  font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--brand-bg);border:1px solid var(--brand-bd);border-radius:100px;padding:4px 11px;color:var(--brand-2);
 }
-.chart-card img{width:100%;display:block}
+.chart-canvas{position:relative;background:#fff;
+  background-image:linear-gradient(rgba(0,0,0,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.04) 1px,transparent 1px);
+  background-size:32px 32px}
+.chart-canvas img{width:100%;display:block}
+.chart-canvas .shimmer{position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(76,141,255,.10) 50%,transparent 70%);
+  background-size:200% 100%;animation:sh 1.4s linear infinite;pointer-events:none}
+.chart-canvas img:not([data-loading]) + .shimmer{display:none}
+@keyframes sh{from{background-position:200% 0}to{background-position:-200% 0}}
 
 /* DETAIL */
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.detail-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow-sm)}
-.detail-card h3{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);letter-spacing:-.01em}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.detail-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.detail-card h3{font-family:var(--display);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);letter-spacing:-.01em}
 table{width:100%;border-collapse:collapse}
 tr+tr td{border-top:1px solid var(--border)}
-td{padding:9px 0;font-size:12px;color:var(--text2)}
-td:last-child{text-align:right;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text)}
+td{padding:11px 0;font-size:12.5px;color:var(--text2)}
+td:last-child{text-align:right;font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--text)}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:rgba(148,178,255,.03)}
 
-.compare-boxes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.cbox{border-radius:8px;padding:16px;text-align:center}
-.cbox.s{background:var(--green-bg);border:1px solid var(--green-bd)}
-.cbox.m{background:var(--red-bg);border:1px solid #FECACA}
-.cbox-val{font-family:var(--mono);font-size:24px;font-weight:700;line-height:1}
-.cbox.s .cbox-val{color:var(--green)}
-.cbox.m .cbox-val{color:var(--red)}
-.cbox-lbl{font-size:11px;color:var(--text2);margin-top:5px}
-.cbox-pct{font-family:var(--mono);font-size:12px;font-weight:600;margin-top:4px}
+.compare-boxes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.cbox{border-radius:13px;padding:20px;text-align:center;position:relative;overflow:hidden}
+.cbox.s{background:var(--up-bg);border:1px solid var(--up-bd)}
+.cbox.m{background:var(--down-bg);border:1px solid var(--down-bd)}
+.cbox-val{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1}
+.cbox.s .cbox-val{color:var(--up)}
+.cbox.m .cbox-val{color:var(--down)}
+.cbox-lbl{font-size:11px;color:var(--text2);margin-top:6px}
+.cbox-pct{font-family:var(--mono);font-size:12px;font-weight:600;margin-top:5px}
 
-.alpha-row{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-top:16px;padding-top:14px;border-top:1px solid var(--border);
-}
+.alpha-row{display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .alpha-label{font-size:12px;color:var(--text2)}
-.alpha-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green)}
+.alpha-val{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--up)}
 
 @media(max-width:900px){
-  .dash{padding:28px 20px 64px}
+  .dash{padding:32px 20px 72px}
   .mg,.chart-grid,.detail-grid{grid-template-columns:1fr 1fr}
   .compare-boxes{grid-template-columns:1fr 1fr}
 }
-@media(max-width:600px){
-  .mg,.chart-grid,.detail-grid,.compare-boxes{grid-template-columns:1fr}
-}
+@media(max-width:600px){.mg,.chart-grid,.detail-grid,.compare-boxes{grid-template-columns:1fr}}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="dash">
-  <div class="dash-header">
+  <div class="dash-header reveal">
     <div>
-      <div class="dash-title">Strategy Dashboard</div>
+      <div class="dash-title">Strategy <span class="g">Dashboard</span></div>
       <div class="dash-sub">Nifty 50 · Test period Aug 2024 – Jul 2026 · Daily frequency</div>
     </div>
     <div class="cache-badge">
@@ -109,80 +111,88 @@ td:last-child{text-align:right;font-family:var(--mono);font-size:12px;font-weigh
 
   <!-- METRICS -->
   <div class="mg">
-    <div class="mc pos">
+    <div class="mc pos reveal" data-tilt>
       <div class="mc-tag">Model Accuracy</div>
-      <div class="mc-val pos">{{ "%.1f"|format(data.accuracy*100) }}%</div>
+      <div class="mc-val pos" data-countup data-to="{{ '%.1f'|format(data.accuracy*100) }}" data-dec="1" data-suffix="%">{{ "%.1f"|format(data.accuracy*100) }}%</div>
       <div class="mc-sub">vs 50% random baseline</div>
     </div>
-    <div class="mc pos">
+    <div class="mc brand reveal" data-tilt>
       <div class="mc-tag">Sharpe Ratio</div>
-      <div class="mc-val neu">{{ "%.3f"|format(data.sharpe) }}</div>
+      <div class="mc-val neu" data-countup data-to="{{ '%.3f'|format(data.sharpe) }}" data-dec="3">{{ "%.3f"|format(data.sharpe) }}</div>
       <div class="mc-sub">Risk-adjusted return above 1.0</div>
     </div>
-    <div class="mc neg">
+    <div class="mc neg reveal" data-tilt>
       <div class="mc-tag">Max Drawdown</div>
-      <div class="mc-val neg">{{ "%.1f"|format(data.max_drawdown*100) }}%</div>
+      <div class="mc-val neg" data-countup data-to="{{ '%.1f'|format(data.max_drawdown*100) }}" data-dec="1" data-suffix="%">{{ "%.1f"|format(data.max_drawdown*100) }}%</div>
       <div class="mc-sub">Peak-to-trough decline</div>
     </div>
-    <div class="mc pos">
+    <div class="mc pos reveal" data-tilt>
       <div class="mc-tag">Win Rate</div>
-      <div class="mc-val pos">{{ "%.1f"|format(data.win_rate*100) }}%</div>
+      <div class="mc-val pos" data-countup data-to="{{ '%.1f'|format(data.win_rate*100) }}" data-dec="1" data-suffix="%">{{ "%.1f"|format(data.win_rate*100) }}%</div>
       <div class="mc-sub">Profitable daily signals</div>
     </div>
   </div>
 
   <!-- CHARTS -->
   <div class="chart-grid">
-    <div class="chart-card">
+    <div class="chart-card reveal">
       <div class="chart-head">
         <span class="chart-head-name">Strategy vs Market — Cumulative Returns</span>
         <span class="chart-tag">Backtest</span>
       </div>
-      <img src="/chart/backtest" alt="Backtest chart" loading="lazy"/>
+      <div class="chart-canvas">
+        <img src="/chart/backtest" alt="Line chart comparing cumulative returns of the ML strategy against the Nifty 50 market benchmark over the test period" loading="lazy" data-loading onload="this.removeAttribute('data-loading')"/>
+        <div class="shimmer"></div>
+      </div>
     </div>
-    <div class="chart-card">
+    <div class="chart-card reveal">
       <div class="chart-head">
         <span class="chart-head-name">Technical Indicators</span>
         <span class="chart-tag">Features</span>
       </div>
-      <img src="/chart/features" alt="Features chart" loading="lazy"/>
+      <div class="chart-canvas">
+        <img src="/chart/features" alt="Chart of technical indicator features used by the model, including moving averages and Bollinger bands" loading="lazy" data-loading onload="this.removeAttribute('data-loading')"/>
+        <div class="shimmer"></div>
+      </div>
     </div>
   </div>
 
   <!-- DETAIL -->
   <div class="detail-grid">
-    <div class="detail-card">
+    <div class="detail-card reveal">
       <h3>All metrics</h3>
       <table>
-        <tr><td>Accuracy</td><td style="color:var(--green)">{{ "%.4f"|format(data.accuracy) }}</td></tr>
-        <tr><td>Sharpe Ratio</td><td style="color:var(--green)">{{ "%.4f"|format(data.sharpe) }}</td></tr>
-        <tr><td>Max Drawdown</td><td style="color:var(--red)">{{ "%.4f"|format(data.max_drawdown) }}</td></tr>
-        <tr><td>Win Rate</td><td style="color:var(--green)">{{ "%.4f"|format(data.win_rate) }}</td></tr>
-        <tr><td>Strategy final</td><td style="color:var(--green)">{{ "%.4f"|format(data.cumulative_strategy) }}x</td></tr>
-        <tr><td>Market final</td><td style="color:var(--red)">{{ "%.4f"|format(data.cumulative_market) }}x</td></tr>
-        <tr><td>Alpha</td><td style="color:var(--green)">+{{ "%.1f"|format((data.cumulative_strategy-data.cumulative_market)*100) }}pp</td></tr>
+        <tbody>
+        <tr><td>Accuracy</td><td style="color:var(--up)">{{ "%.4f"|format(data.accuracy) }}</td></tr>
+        <tr><td>Sharpe Ratio</td><td style="color:var(--brand-2)">{{ "%.4f"|format(data.sharpe) }}</td></tr>
+        <tr><td>Max Drawdown</td><td style="color:var(--down)">{{ "%.4f"|format(data.max_drawdown) }}</td></tr>
+        <tr><td>Win Rate</td><td style="color:var(--up)">{{ "%.4f"|format(data.win_rate) }}</td></tr>
+        <tr><td>Strategy final</td><td style="color:var(--up)">{{ "%.4f"|format(data.cumulative_strategy) }}x</td></tr>
+        <tr><td>Market final</td><td style="color:var(--down)">{{ "%.4f"|format(data.cumulative_market) }}x</td></tr>
+        <tr><td>Alpha</td><td style="color:var(--up)">+{{ "%.1f"|format((data.cumulative_strategy-data.cumulative_market)*100) }}pp</td></tr>
+        </tbody>
       </table>
     </div>
 
-    <div class="detail-card">
+    <div class="detail-card reveal">
       <h3>Return comparison (₹1 starting capital)</h3>
       <div class="compare-boxes">
         <div class="cbox s">
           <div class="cbox-val">{{ "%.3f"|format(data.cumulative_strategy) }}x</div>
           <div class="cbox-lbl">ML Strategy</div>
-          <div class="cbox-pct" style="color:var(--green)">+{{ "%.1f"|format((data.cumulative_strategy-1)*100) }}%</div>
+          <div class="cbox-pct" style="color:var(--up)">+{{ "%.1f"|format((data.cumulative_strategy-1)*100) }}%</div>
         </div>
         <div class="cbox m">
           <div class="cbox-val">{{ "%.3f"|format(data.cumulative_market) }}x</div>
           <div class="cbox-lbl">Buy &amp; Hold</div>
-          <div class="cbox-pct" style="color:var(--red)">{{ "%.1f"|format((data.cumulative_market-1)*100) }}%</div>
+          <div class="cbox-pct" style="color:var(--down)">{{ "%.1f"|format((data.cumulative_market-1)*100) }}%</div>
         </div>
       </div>
       <div class="alpha-row">
         <span class="alpha-label">Total alpha generated</span>
         <span class="alpha-val">+{{ "%.1f"|format((data.cumulative_strategy-data.cumulative_market)*100) }}<span style="font-size:14px;font-weight:400;color:var(--text2)">pp</span></span>
       </div>
-      <div style="margin-top:16px">
+      <div style="margin-top:18px">
         <a href="/chat" class="btn btn-primary" style="width:100%;justify-content:center">Ask AI analyst about this →</a>
       </div>
     </div>
