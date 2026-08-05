@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% block title %}Earnings Intelligence — NiftyML{% endblock %}
+{% block head %}
+<style>
+.earn{max-width:1200px;margin:0 auto;padding:48px 48px 96px}
+
+/* ── Header ── */
+.earn-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:16px}
+.earn-title{font-family:var(--display);font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.03em;color:var(--ink);margin-bottom:6px;line-height:1.04}
+.earn-title .g{background:linear-gradient(90deg,var(--up),var(--brand-3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.earn-sub{font-size:13px;color:var(--text2);font-family:var(--mono)}
+
+/* ── Stats strip ── */
+.stats-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px 16px;text-align:center}
+.stat-box:hover{border-color:var(--border2)}
+.stat-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);line-height:1}
+.stat-val.up{color:var(--up)}
+.stat-val.brand{color:var(--brand-2)}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-top:6px}
+
+/* ── Controls ── */
+.controls{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.search-box{
+  flex:1;min-width:200px;max-width:320px;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:9px 14px;font-size:13px;color:var(--text);font-family:var(--sans);outline:none;
+}
+.search-box:focus{border-color:var(--brand-bd);box-shadow:0 0 0 3px rgba(76,141,255,.12)}
+.search-box::placeholder{color:var(--text3)}
+.filter-btn{
+  padding:9px 16px;border-radius:10px;font-size:12px;font-weight:600;
+  background:var(--surface);border:1px solid var(--border);color:var(--text2);
+  cursor:pointer;transition:all .15s;font-family:var(--sans);
+}
+.filter-btn:hover,.filter-btn.active{background:var(--brand-bg);border-color:var(--brand-bd);color:var(--brand-2)}
+.sort-select{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:9px 14px;font-size:12px;color:var(--text2);font-family:var(--sans);outline:none;cursor:pointer;
+}
+.sort-select:focus{border-color:var(--brand-bd)}
+.results-count{font-size:12px;color:var(--text3);font-family:var(--mono);margin-left:auto}
+
+/* ── Cards grid ── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+
+.ecard{
+  background:linear-gradient(160deg,var(--surface2),var(--surface));
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:22px;box-shadow:var(--shadow);
+  transition:border-color .18s,box-shadow .18s,transform .18s;
+  position:relative;overflow:hidden;cursor:default;
+}
+.ecard:hover{border-color:var(--border2);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.ecard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--up),transparent);opacity:0;transition:opacity .2s}
+.ecard:hover::after{opacity:1}
+
+/* card top row */
+.ecard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.ecard-ticker{font-family:var(--display);font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.02em}
+.ecard-date{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px}
+
+/* stars */
+.stars{font-size:14px;letter-spacing:2px}
+.stars.s3{color:#F59E0B}
+.stars.s2{color:var(--brand-2)}
+.stars.s1{color:var(--text3)}
+.score-num{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px;text-align:right}
+
+/* gap pill */
+.gap-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--up-bg);border:1px solid var(--up-bd);
+  border-radius:100px;padding:4px 12px;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--up);
+  margin-bottom:14px;
+}
+.gap-pill svg{width:12px;height:12px}
+
+/* meta row */
+.ecard-meta{display:flex;gap:16px;margin-bottom:16px}
+.meta-item{display:flex;flex-direction:column;gap:2px}
+.meta-val{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text)}
+.meta-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3)}
+
+/* drift row */
+.drift-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.drift-cell{text-align:center;background:var(--bg3);border-radius:8px;padding:10px 6px}
+.drift-val{font-family:var(--mono);font-size:14px;font-weight:700;line-height:1}
+.drift-val.pos{color:var(--up)}
+.drift-val.neg{color:var(--down)}
+.drift-val.neu{color:var(--text3)}
+.drift-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:4px}
+
+/* hist bar */
+.hist-bar-wrap{margin-top:12px}
+.hist-label{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:5px}
+.hist-bar{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.hist-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--up),var(--brand-3));transition:width .6s cubic-bezier(.16,1,.3,1)}
+
+/* no data */
+.no-events{text-align:center;padding:80px 20px;color:var(--text3)}
+.no-events svg{width:48px;height:48px;margin:0 auto 16px;opacity:.3}
+
+/* loading skeleton */
+.skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);
+  background-size:200% 100%;animation:sk 1.4s linear infinite;border-radius:8px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+@media(max-width:900px){
+  .earn{padding:32px 20px 72px}
+  .stats-strip{grid-template-columns:repeat(3,1fr)}
+  .cards-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .stats-strip{grid-template-columns:1fr 1fr}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="earn">
+
+  <!-- Header -->
+  <div class="earn-header reveal">
+    <div>
+      <div class="earn-title">Earnings <span class="g">Intelligence</span></div>
+      <div class="earn-sub">{{ data.stats.stocks_covered }} stocks · {{ data.stats.total_events }} events · {{ data.stats.date_range_start }} → {{ data.stats.date_range_end }}</div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--text3)">Cached {{ data.date }}</span>
+      <a href="/api/earnings/refresh" class="btn btn-ghost" style="font-size:12px;padding:8px 14px">↻ Refresh</a>
+    </div>
+  </div>
+
+  <!-- Stats strip -->
+  <div class="stats-strip reveal">
+    <div class="stat-box">
+      <div class="stat-val brand">{{ data.stats.total_events }}</div>
+      <div class="stat-lbl">Total Events</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val up">{{ data.stats.avg_gap }}%</div>
+      <div class="stat-lbl">Avg Gap Size</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val brand">{{ data.stats.avg_vol_ratio }}x</div>
+      <div class="stat-lbl">Avg Vol Surge</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val {% if data.stats.avg_15d_return > 0 %}up{% else %}{% endif %}">
+        {{ "%+.2f"|format(data.stats.avg_15d_return) }}%
+      </div>
+      <div class="stat-lbl">Avg 15d Drift</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val up">{{ data.stats.pct_positive_15d }}%</div>
+      <div class="stat-lbl">Positive 15d</div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls reveal">
+    <input class="search-box" id="search" type="text" placeholder="Search ticker…" oninput="filterCards()"/>
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('s3',this)">★★★ Only</button>
+    <button class="filter-btn" onclick="setFilter('s2',this)">★★+</button>
+    <select class="sort-select" id="sort-sel" onchange="sortCards()">
+      <option value="date">Latest first</option>
+      <option value="gap">Biggest gap</option>
+      <option value="score">Signal score</option>
+      <option value="drift15">15d drift</option>
+    </select>
+    <span class="results-count" id="results-count">{{ data.events|length }} events</span>
+  </div>
+
+  <!-- Cards -->
+  {% if data.events %}
+  <div class="cards-grid" id="cards-grid">
+    {% for ev in data.events %}
+    <div class="ecard reveal"
+         data-ticker="{{ ev.ticker }}"
+         data-score="{{ ev.signal_score }}"
+         data-stars="{{ ev.signal_stars|length // 3 }}"
+         data-gap="{{ ev.gap_pct }}"
+         data-drift="{{ ev.ret_15d if ev.ret_15d is not none else 0 }}"
+         data-date="{{ ev.date }}">
+
+      <!-- Top row -->
+      <div class="ecard-top">
+        <div>
+          <a href="/stock/{{ ev.ticker }}" style="text-decoration:none">
+            <div class="ecard-ticker" style="cursor:pointer">{{ ev.ticker }} ↗</div>
+          </a>
+          <div class="ecard-date">{{ ev.date }}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="stars {% if ev.signal_stars == '★★★' %}s3{% elif ev.signal_stars == '★★☆' %}s2{% else %}s1{% endif %}">
+            {{ ev.signal_stars }}
+          </div>
+          <div class="score-num">{{ ev.signal_score }}/100</div>
+        </div>
+      </div>
+
+      <!-- Gap pill -->
+      <div class="gap-pill">
+        <svg viewBox="0 0 12 12" fill="none"><polyline points="1,9 4,5 7,7 11,2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        +{{ ev.gap_pct }}% gap
+      </div>
+
+      <!-- Meta -->
+      <div class="ecard-meta">
+        <div class="meta-item">
+          <span class="meta-val">{{ ev.vol_ratio }}x</span>
+          <span class="meta-lbl">Vol surge</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-val">{{ (ev.close_strength * 100)|round|int }}%</span>
+          <span class="meta-lbl">Close str</span>
+        </div>
+        {% if ev.hist_n is defined %}
+        <div class="meta-item">
+          <span class="meta-val">{{ ev.hist_n }}</span>
+          <span class="meta-lbl">Past events</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Drift row -->
+      <div class="drift-row">
+        {% for days, key in [('5d','ret_5d'),('10d','ret_10d'),('15d','ret_15d')] %}
+        {% set val = ev[key] %}
+        <div class="drift-cell">
+          <div class="drift-val {% if val is not none %}{% if val > 0 %}pos{% elif val < 0 %}neg{% else %}neu{% endif %}{% else %}neu{% endif %}">
+            {% if val is not none %}{{ "%+.1f"|format(val) }}%{% else %}—{% endif %}
+          </div>
+          <div class="drift-lbl">{{ days }} drift</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Historical bar -->
+      {% if ev.hist_positive_15d is defined %}
+      <div class="hist-bar-wrap">
+        <div class="hist-label">
+          <span>Historical 15d win rate</span>
+          <span style="color:var(--up)">{{ ev.hist_positive_15d }}%</span>
+        </div>
+        <div class="hist-bar">
+          <div class="hist-fill" style="width:{{ ev.hist_positive_15d }}%"></div>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="no-events reveal">
+    <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2"/><path d="M16 24h16M24 16v16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <div style="font-size:16px;font-weight:600;color:var(--text2);margin-bottom:8px">No events found</div>
+    <div style="font-size:13px">Run <code style="font-family:var(--mono);color:var(--brand-2)">python earnings_main.py</code> to build the dataset</div>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+// ── Filter + sort state ───────────────────────────────────────────────────────
+let activeFilter = 'all';
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterCards();
+}
+
+function filterCards() {
+  const q     = document.getElementById('search').value.toLowerCase().trim();
+  const cards = document.querySelectorAll('.ecard');
+  let   shown = 0;
+
+  cards.forEach(c => {
+    const ticker = c.dataset.ticker.toLowerCase();
+    const stars  = parseInt(c.dataset.stars);
+    const matchQ = !q || ticker.includes(q);
+    const matchF = activeFilter === 'all'
+                || (activeFilter === 's3' && stars >= 3)
+                || (activeFilter === 's2' && stars >= 2);
+    const show   = matchQ && matchF;
+    c.style.display = show ? '' : 'none';
+    if (show) shown++;
+  });
+
+  document.getElementById('results-count').textContent = shown + ' events';
+}
+
+function sortCards() {
+  const grid  = document.getElementById('cards-grid');
+  const cards = [...grid.querySelectorAll('.ecard')];
+  const by    = document.getElementById('sort-sel').value;
+
+  cards.sort((a, b) => {
+    if (by === 'date')    return b.dataset.date.localeCompare(a.dataset.date);
+    if (by === 'gap')     return parseFloat(b.dataset.gap)   - parseFloat(a.dataset.gap);
+    if (by === 'score')   return parseFloat(b.dataset.score) - parseFloat(a.dataset.score);
+    if (by === 'drift15') return parseFloat(b.dataset.drift) - parseFloat(a.dataset.drift);
+    return 0;
+  });
+
+  cards.forEach(c => grid.appendChild(c));
+}
+</script>
+{% endblock %}

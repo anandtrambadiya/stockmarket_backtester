@@ -8,6 +8,8 @@ from src.visualizer import plot_features, plot_backtest
 from src.model import train_model
 from src.backtest import run_backtest
 from src.reporter import generate_report
+from src.earnings.dashboard_data import build_dashboard_data
+from src.stock.engine import analyse
 from groq import Groq
 from dotenv import load_dotenv
 
@@ -20,7 +22,7 @@ def run_pipeline():
     load_data()
     df = build_features()
     plot_features(df)
-    model, predictions, X_test, y_test, accuracy = train_model(df)
+    model, predictions, X_test, y_test, accuracy, metrics_df = train_model(df)
     results, sharpe, max_drawdown, win_rate = run_backtest(predictions, X_test, y_test, df)
     plot_backtest(results)
     report = generate_report(
@@ -100,6 +102,38 @@ def api_chat():
     )
     reply = completion.choices[0].message.content
     return jsonify({"reply": reply})
+
+# ── Stock analysis routes ─────────────────────────────────────────────────────
+
+@app.route('/stock')
+def stock_home():
+    return render_template('stock.html', data=None, active='earnings')
+
+@app.route('/stock/<ticker>')
+def stock_detail(ticker):
+    data = analyse(ticker.upper())
+    return render_template('stock.html', data=data, ticker=ticker.upper(), active='earnings')
+
+@app.route('/api/stock/<ticker>')
+def api_stock(ticker):
+    return jsonify(analyse(ticker.upper()))
+
+# ── Earnings Intelligence routes ──────────────────────────────────────────────
+
+@app.route('/earnings')
+def earnings():
+    data = build_dashboard_data()
+    return render_template('earnings.html', data=data, active='earnings')
+
+@app.route('/api/earnings')
+def api_earnings():
+    data = build_dashboard_data()
+    return jsonify(data)
+
+@app.route('/api/earnings/refresh')
+def api_earnings_refresh():
+    data = build_dashboard_data(force=True)
+    return jsonify({'status': 'ok', 'events': len(data['events'])})
 
 if __name__ == '__main__':
     app.run(debug=True)

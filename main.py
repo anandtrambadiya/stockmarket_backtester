@@ -14,7 +14,7 @@ df = build_features()
 plot_features(df)
 
 
-model, predictions, X_test, y_test, accuracy = train_model(df)
+model, predictions, X_test, y_test, accuracy, metrics_df = train_model(df)
 
 results, sharpe, max_drawdown, win_rate = run_backtest(predictions, X_test, y_test, df)
 plot_backtest(results)

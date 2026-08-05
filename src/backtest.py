@@ -5,10 +5,22 @@ def run_backtest(predictions, X_test, y_test, df):
     results = pd.DataFrame(index=X_test.index)
     results['Actual'] = y_test
     results['Predicted'] = predictions
-    results['Open'] = df.loc[X_test.index, 'Open']
-    results['Close'] = df.loc[X_test.index, 'Close']
-    
-    results["daily_returns"] = np.where(results["Predicted"], (results["Close"] - results["Open"]) / results["Open"],(results["Open"] - results["Close"]) / results["Open"])
+    # Use NEXT day's Open/Close — signal fires after today's close,
+    # trade executes tomorrow Open → tomorrow Close
+    next_open = df['Open'].shift(-1)
+    next_close = df['Close'].shift(-1)
+
+    results['Open'] = next_open.loc[X_test.index]
+    results['Close'] = next_close.loc[X_test.index]
+
+    # Drop last row — shift(-1) makes it NaN (no "tomorrow" exists for the final row)
+    results.dropna(subset=['Open', 'Close'], inplace=True)
+
+    results["daily_returns"] = np.where(
+        results["Predicted"],
+        (results["Close"] - results["Open"]) / results["Open"],   # BUY: long
+        (results["Open"] - results["Close"]) / results["Open"]    # SELL: short
+    )
 
     results["Cumulative_Strategy"] = (1 + results['daily_returns']).cumprod()
     results["Cumulative_Market"] = (1 + (results['Close'] - results['Open']) / results['Open']).cumprod()
