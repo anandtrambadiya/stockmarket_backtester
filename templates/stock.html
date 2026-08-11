@@ -253,28 +253,29 @@
       <div class="panel reveal">
         <h3>Walk-forward Validation</h3>
         <table class="fold-table">
-          <thead><tr><th>Fold</th><th>Train rows</th><th>Test rows</th><th>Accuracy</th></tr></thead>
+          <thead><tr><th>Fold</th><th>Train</th><th>Test</th><th>Accuracy</th><th>ROC-AUC</th></tr></thead>
           <tbody>
           {% for f in data.folds %}
           <tr>
             <td>{{ f.fold }}</td>
             <td>{{ f.train }}</td>
             <td>{{ f.test }}</td>
-            <td>{{ '%.1f'|format(f.accuracy * 100) }}%</td>
+            <td>{{ f.accuracy }}%</td>
+            <td style="color:{% if f.roc_auc > 0.55 %}var(--up){% elif f.roc_auc < 0.5 %}var(--down){% else %}var(--text2){% endif %}">{{ f.roc_auc }}</td>
           </tr>
           {% endfor %}
           </tbody>
         </table>
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between">
-          <span style="font-size:12px;color:var(--text3)">Average accuracy</span>
-          <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--brand-2)">{{ data.avg_accuracy }}%</span>
+          <span style="font-size:12px;color:var(--text3)">Avg accuracy / ROC-AUC</span>
+          <span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--brand-2)">{{ data.avg_accuracy }}% / {{ data.avg_roc }}</span>
         </div>
       </div>
 
       <div class="panel reveal">
         <h3>Signal Drivers (SHAP)</h3>
         <div style="font-size:11px;color:var(--text3);margin-bottom:16px">Top features driving tomorrow's signal</div>
-        {% set max_imp = sig.drivers[0].importance if sig.drivers else 1 %}
+        {% set max_imp = sig.drivers[0].importance if sig.drivers and sig.drivers[0].importance > 0 else 1 %}
         {% for d in sig.drivers %}
         <div class="driver-item">
           <div class="driver-head">
@@ -282,7 +283,7 @@
             <span class="driver-val">{{ d.importance }}</span>
           </div>
           <div class="driver-bar">
-            <div class="driver-fill" style="width:{{ (d.importance / max_imp * 100)|round }}%"></div>
+            <div class="driver-fill" style="width:{{ ([d.importance / max_imp * 100, 100]|min)|round }}%"></div>
           </div>
         </div>
         {% endfor %}
