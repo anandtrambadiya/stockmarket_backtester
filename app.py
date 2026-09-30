@@ -1,139 +1,161 @@
-from flask import Flask, render_template, jsonify, request, send_file
-import json, os
-from datetime import date
-from pathlib import Path
-from src.data_loader import load_data
-from src.features import build_features
-from src.visualizer import plot_features, plot_backtest
-from src.model import train_model
-from src.backtest import run_backtest
-from src.reporter import generate_report
+from dotenv import load_dotenv
+load_dotenv()
+
+from flask import Flask, render_template, jsonify, request
 from src.earnings.dashboard_data import build_dashboard_data
 from src.stock.engine import analyse
-from groq import Groq
-from dotenv import load_dotenv
+import os, json
 
-load_dotenv()
 app = Flask(__name__)
 
-# ── Pipeline & caching ────────────────────────────────────────────────────────
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_MODEL   = "openai/gpt-oss-120b"
 
-def run_pipeline():
-    load_data()
-    df = build_features()
-    plot_features(df)
-    model, predictions, X_test, y_test, accuracy, metrics_df = train_model(df)
-    results, sharpe, max_drawdown, win_rate = run_backtest(predictions, X_test, y_test, df)
-    plot_backtest(results)
-    report = generate_report(
-        sharpe, max_drawdown, win_rate, accuracy,
-        results["Cumulative_Strategy"].iloc[-1],
-        results["Cumulative_Market"].iloc[-1]
-    )
-    return {
-        "date": str(date.today()),
-        "accuracy": accuracy,
-        "sharpe": sharpe,
-        "max_drawdown": max_drawdown,
-        "win_rate": win_rate,
-        "cumulative_strategy": results["Cumulative_Strategy"].iloc[-1],
-        "cumulative_market": results["Cumulative_Market"].iloc[-1],
-        "report": report,
-    }
 
-def get_cached_data():
-    cache_path = Path("data/cache.json")
-    if cache_path.exists():
-        try:
-            cache = json.loads(cache_path.read_text())
-            if cache.get("date") == str(date.today()):
-                return cache
-        except (json.JSONDecodeError, KeyError):
-            pass
-    result = run_pipeline()
-    cache_path.write_text(json.dumps(result))
-    return result
+# ── Home ─────────────────────────────────────────────────────────────────────
 
-# ── HTML routes ───────────────────────────────────────────────────────────────
-
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('index.html', active='home')
+    return render_template("index.html", active="home")
 
-@app.route('/dashboard')
-def dashboard():
-    data = get_cached_data()
-    return render_template('dashboard.html', data=data, active='dashboard')
 
-@app.route('/chat')
-def chat():
-    data = get_cached_data()
-    return render_template('chat.html', data=data, active='chat')
+# ── Earnings ──────────────────────────────────────────────────────────────────
 
-# ── Data/chart routes ─────────────────────────────────────────────────────────
+@app.route("/earnings")
+def earnings():
+    data = build_dashboard_data()
+    return render_template("earnings.html", data=data, active="earnings")
 
-@app.route('/api/data')
-def api_data():
-    return jsonify(get_cached_data())
+@app.route("/api/earnings")
+def api_earnings():
+    return jsonify(build_dashboard_data())
 
-@app.route('/chart/backtest')
-def chart_backtest():
-    return send_file('data/backtest_plot.png', mimetype='image/png')
+@app.route("/api/earnings/refresh")
+def api_earnings_refresh():
+    data = build_dashboard_data(force=True)
+    return jsonify({"status": "ok", "events": len(data["events"])})
 
-@app.route('/chart/features')
-def chart_features():
-    return send_file('data/features_plot.png', mimetype='image/png')
 
-# ── Chat API ──────────────────────────────────────────────────────────────────
+# ── Stock ─────────────────────────────────────────────────────────────────────
 
-@app.route('/api/chat', methods=['POST'])
-def api_chat():
-    body = request.get_json(force=True)
-    messages = body.get('messages', [])
-    system = body.get('system', 'You are a quantitative trading assistant.')
-
-    api_key = os.getenv('GROQ_API_KEY')
-    client = Groq(api_key=api_key)
-
-    completion = client.chat.completions.create(
-        messages=[{"role": "system", "content": system}] + messages,
-        model="llama-3.1-8b-instant",
-        max_tokens=400,
-    )
-    reply = completion.choices[0].message.content
-    return jsonify({"reply": reply})
-
-# ── Stock analysis routes ─────────────────────────────────────────────────────
-
-@app.route('/stock')
+@app.route("/stock")
 def stock_home():
-    return render_template('stock.html', data=None, active='earnings')
+    return render_template("stock.html", data=None, active="stock")
 
-@app.route('/stock/<ticker>')
+@app.route("/stock/<ticker>")
 def stock_detail(ticker):
     data = analyse(ticker.upper())
-    return render_template('stock.html', data=data, ticker=ticker.upper(), active='earnings')
+    return render_template("stock.html", data=data, ticker=ticker.upper(), active="stock")
 
-@app.route('/api/stock/<ticker>')
+@app.route("/api/stock/<ticker>")
 def api_stock(ticker):
     return jsonify(analyse(ticker.upper()))
 
-# ── Earnings Intelligence routes ──────────────────────────────────────────────
 
-@app.route('/earnings')
-def earnings():
-    data = build_dashboard_data()
-    return render_template('earnings.html', data=data, active='earnings')
+# ── Chat ──────────────────────────────────────────────────────────────────────
 
-@app.route('/api/earnings')
-def api_earnings():
-    data = build_dashboard_data()
-    return jsonify(data)
+@app.route("/chat")
+def chat():
+    return render_template("chat.html", active="chat")
 
-@app.route('/api/earnings/refresh')
-def api_earnings_refresh():
-    data = build_dashboard_data(force=True)
-    return jsonify({'status': 'ok', 'events': len(data['events'])})
+@app.route("/api/chat", methods=["POST"])
+def api_chat():
+    import requests as req_lib
+    key = os.environ.get("GROQ_API_KEY", GROQ_API_KEY)
+    if not key:
+        return jsonify({"error": "GROQ_API_KEY not set in .env"}), 500
+    body     = request.get_json(force=True)
+    messages = body.get("messages", [])
+    system   = body.get("system", "You are a helpful quantitative analyst.")
+    full_messages = [{"role": "system", "content": system}] + [
+        m for m in messages if m.get("role") in ("user", "assistant")
+    ]
+    try:
+        resp = req_lib.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={"model": GROQ_MODEL, "messages": full_messages, "max_tokens": 1024, "temperature": 0.7, "stream": False},
+            timeout=30,
+        )
+        print(f"[Groq] status={resp.status_code}")
+        if resp.status_code != 200:
+            try:
+                msg = resp.json().get("error", {}).get("message", resp.text)
+            except Exception:
+                msg = resp.text
+            return jsonify({"error": f"Groq {resp.status_code}: {msg}"}), 500
+        reply = resp.json()["choices"][0]["message"]["content"]
+        return jsonify({"reply": reply})
+    except Exception as e:
+        print(f"[Groq Exception] {e}")
+        return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+# ── Sarvam STT ────────────────────────────────────────────────────────────────
+
+@app.route("/api/stt", methods=["POST"])
+def api_stt():
+    import requests as req_lib
+    key = os.environ.get("SARVAM_API_KEY", "")
+    if not key:
+        return jsonify({"error": "SARVAM_API_KEY not set in .env"}), 500
+    if "audio" not in request.files:
+        return jsonify({"error": "No audio file"}), 400
+    audio_file = request.files["audio"]
+    lang = request.form.get("language_code", "unknown")
+    try:
+        resp = req_lib.post(
+            "https://api.sarvam.ai/speech-to-text",
+            headers={"api-subscription-key": key},
+            files={"file": (audio_file.filename or "audio.webm", audio_file.read(), "audio/webm")},
+            data={"model": "saaras:v3", "language_code": lang},
+            timeout=30,
+        )
+        print(f"[Saaras STT] status={resp.status_code}")
+        if resp.status_code != 200:
+            return jsonify({"error": f"Saaras {resp.status_code}: {resp.text}"}), 500
+        data = resp.json()
+        return jsonify({"transcript": data.get("transcript", ""), "language_code": data.get("language_code", lang)})
+    except Exception as e:
+        print(f"[Saaras STT Exception] {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+# ── Sarvam TTS ────────────────────────────────────────────────────────────────
+
+@app.route("/api/tts", methods=["POST"])
+def api_tts():
+    import requests as req_lib
+    key = os.environ.get("SARVAM_API_KEY", "")
+    if not key:
+        return jsonify({"error": "SARVAM_API_KEY not set in .env"}), 500
+    body = request.get_json(force=True)
+    text = body.get("text", "").strip()[:450]
+    lang = body.get("language_code", "hi-IN")
+    if not text:
+        return jsonify({"error": "No text"}), 400
+    try:
+        resp = req_lib.post(
+            "https://api.sarvam.ai/text-to-speech",
+            headers={"api-subscription-key": key, "Content-Type": "application/json"},
+            json={"inputs": [text], "target_language_code": lang, "speaker": "anand", "model": "bulbul:v3", "enable_preprocessing": True},
+            timeout=30,
+        )
+        print(f"[Bulbul TTS] status={resp.status_code}")
+        if resp.status_code != 200:
+            print(f"[Bulbul TTS] error body: {resp.text}")
+            return jsonify({"error": f"Bulbul {resp.status_code}: {resp.text}"}), 500
+        data   = resp.json()
+        audios = data.get("audios", [])
+        if not audios:
+            return jsonify({"error": "No audio returned"}), 500
+        return jsonify({"audio_b64": audios[0], "language_code": lang})
+    except Exception as e:
+        print(f"[Bulbul TTS Exception] {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+# ── Run ───────────────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)

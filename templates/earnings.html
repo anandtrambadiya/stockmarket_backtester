@@ -134,6 +134,22 @@
     </div>
   </div>
 
+  <!-- Model status banner -->
+  {% if data.model_trained %}
+  <div style="display:flex;align-items:center;gap:10px;background:rgba(52,211,153,.06);border:1px solid var(--up-bd);border-radius:10px;padding:10px 16px;margin-bottom:24px;font-size:12px" class="reveal">
+    <span style="color:var(--up)">&#9679;</span>
+    <span style="color:var(--up);font-family:var(--mono);font-weight:600">ML model active</span>
+    <span style="color:var(--text3)">Lift: {{ data.model_meta.get('avg_lift', 0) | round(2) }}% · Trained on {{ data.model_meta.get('n_events', '?') }} events</span>
+    <span style="margin-left:auto;color:var(--text3)">Run python pipeline.py to retrain</span>
+  </div>
+  {% else %}
+  <div style="display:flex;align-items:center;gap:10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:10px 16px;margin-bottom:24px;font-size:12px" class="reveal">
+    <span style="color:#FBB724">&#9675;</span>
+    <span style="color:#FBB724;font-family:var(--mono);font-weight:600">No ML model</span>
+    <span style="color:var(--text3)">Showing rule-based signal scores only &mdash; run python pipeline.py to train</span>
+  </div>
+  {% endif %}
+
   <!-- Stats strip -->
   <div class="stats-strip reveal">
     <div class="stat-box">
@@ -149,14 +165,14 @@
       <div class="stat-lbl">Avg Vol Surge</div>
     </div>
     <div class="stat-box">
-      <div class="stat-val {% if data.stats.avg_15d_return > 0 %}up{% else %}{% endif %}">
-        {{ "%+.2f"|format(data.stats.avg_15d_return) }}%
+      <div class="stat-val {% if data.stats.avg_10d_return > 0 %}up{% else %}{% endif %}">
+        {{ "%+.2f"|format(data.stats.avg_10d_return) }}%
       </div>
-      <div class="stat-lbl">Avg 15d Drift</div>
+      <div class="stat-lbl">Avg 10d Drift</div>
     </div>
     <div class="stat-box">
-      <div class="stat-val up">{{ data.stats.pct_positive_15d }}%</div>
-      <div class="stat-lbl">Positive 15d</div>
+      <div class="stat-val up">{{ data.stats.pct_positive_10d }}%</div>
+      <div class="stat-lbl">Positive 10d</div>
     </div>
   </div>
 
@@ -170,7 +186,7 @@
       <option value="date">Latest first</option>
       <option value="gap">Biggest gap</option>
       <option value="score">Signal score</option>
-      <option value="drift15">15d drift</option>
+      <option value="drift15">10d drift</option>
     </select>
     <span class="results-count" id="results-count">{{ data.events|length }} events</span>
   </div>
@@ -184,7 +200,7 @@
          data-score="{{ ev.signal_score }}"
          data-stars="{{ ev.signal_stars|length // 3 }}"
          data-gap="{{ ev.gap_pct }}"
-         data-drift="{{ ev.ret_15d if ev.ret_15d is not none else 0 }}"
+         data-drift="{{ ev.ret_10d if ev.ret_10d is not none else 0 }}"
          data-date="{{ ev.date }}">
 
       <!-- Top row -->
@@ -209,6 +225,12 @@
         +{{ ev.gap_pct }}% gap
       </div>
 
+      <!-- ML prediction badge -->
+      {% if ev.ml_pred_10d is not none %}
+      <div style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-bg);border:1px solid var(--brand-bd);border-radius:100px;padding:4px 12px;font-family:var(--mono);font-size:11px;color:var(--brand-2);margin-bottom:14px;margin-left:8px">
+        ML: {{ "%+.1f"|format(ev.ml_pred_10d) }}% pred
+      </div>
+      {% endif %}
       <!-- Meta -->
       <div class="ecard-meta">
         <div class="meta-item">
@@ -229,7 +251,7 @@
 
       <!-- Drift row -->
       <div class="drift-row">
-        {% for days, key in [('5d','ret_5d'),('10d','ret_10d'),('15d','ret_15d')] %}
+        {% for days, key in [('5d','ret_5d'),('10d','ret_10d'),('15d','ret_10d')] %}
         {% set val = ev[key] %}
         <div class="drift-cell">
           <div class="drift-val {% if val is not none %}{% if val > 0 %}pos{% elif val < 0 %}neg{% else %}neu{% endif %}{% else %}neu{% endif %}">
@@ -241,14 +263,14 @@
       </div>
 
       <!-- Historical bar -->
-      {% if ev.hist_positive_15d is defined %}
+      {% if ev.hist_positive_10d is defined %}
       <div class="hist-bar-wrap">
         <div class="hist-label">
-          <span>Historical 15d win rate</span>
-          <span style="color:var(--up)">{{ ev.hist_positive_15d }}%</span>
+          <span>Historical 10d win rate</span>
+          <span style="color:var(--up)">{{ ev.hist_positive_10d }}%</span>
         </div>
         <div class="hist-bar">
-          <div class="hist-fill" style="width:{{ ev.hist_positive_15d }}%"></div>
+          <div class="hist-fill" style="width:{{ ev.hist_positive_10d }}%"></div>
         </div>
       </div>
       {% endif %}
@@ -261,7 +283,7 @@
   <div class="no-events reveal">
     <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2"/><path d="M16 24h16M24 16v16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     <div style="font-size:16px;font-weight:600;color:var(--text2);margin-bottom:8px">No events found</div>
-    <div style="font-size:13px">Run <code style="font-family:var(--mono);color:var(--brand-2)">python earnings_main.py</code> to build the dataset</div>
+    <div style="font-size:13px">Run <code style="font-family:var(--mono);color:var(--brand-2)">python pipeline.py</code> to build the dataset</div>
   </div>
   {% endif %}
 
